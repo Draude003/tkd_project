@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tkd/features/login/screens/login_screen.dart';
 import 'theme/app_theme.dart';
-import 'features/login/screens/login_screen.dart';
-import 'features/parent/screens/parent_home_screen.dart';
+
+//import 'features/alert/screens/alert_screen.dart';
+//import 'features/parent/screens/parent_home_screen.dart';
 
 void main() {
   runApp(const TKDApp());

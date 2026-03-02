@@ -3,6 +3,9 @@ import 'package:tkd/features/account/screens/parent_account_screen.dart';
 import '../../../models/parent_model.dart';
 import '../widgets/child_card.dart';
 import '../../chat/screens/chat_screen.dart';
+import '../../alert/screens/alert_screen.dart';
+import '../../childprofile/screens/child_profile_screen.dart'; // ← added
+import '../../../models/child_profile_model.dart'; // ← added
 import '../widgets/parent_quick_actions.dart';
 import '../widgets/parent_recent_alerts.dart';
 import '../widgets/parent_bottom_nav_bar.dart';
@@ -21,16 +24,14 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     setState(() => _currentIndex = index);
   }
 
-  // for routing
   static const List<Widget> _screens = [
     _HomeBody(),
     _PlaceholderScreen(label: 'Billing'),
     ChatScreen(),
-    _PlaceholderScreen(label: 'Alerts'),
+    AlertScreen(),
     ParentAccountScreen(),
   ];
 
-  // for appbar title
   static const List<String> _titles = [
     'Parent Portal',
     'Billing',
@@ -39,19 +40,34 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     'Account',
   ];
 
+  bool get _showBackButton => _currentIndex != 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: _showBackButton
+            ? IconButton(
+                icon: const Icon(
+                  Icons.chevron_left,
+                  color: Colors.white,
+                  size: 28,
+                ),
+                onPressed: () => setState(() => _currentIndex = 0),
+              )
+            : null,
+        automaticallyImplyLeading: false,
         title: Text(
           _titles[_currentIndex],
           style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
-        automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: Colors.white,
+            ),
             onPressed: () {},
           ),
         ],
@@ -65,7 +81,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
   }
 }
 
-// Home tab content
+// ── Home Tab ──────────────────────────────────────────────────────────────────
 class _HomeBody extends StatelessWidget {
   const _HomeBody();
 
@@ -81,7 +97,9 @@ class _HomeBody extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Good morning, ${parent.name}',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
 
@@ -90,23 +108,33 @@ class _HomeBody extends StatelessWidget {
             children: [
               Container(width: 4, height: 18, color: const Color(0xFF1C1C1E)),
               const SizedBox(width: 8),
-              const Text('My Children', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'My Children',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          ...parent.children.map((child) => ChildCard(
-            child: child,
-            onTap: () {
-              // TODO: navigate to child profile
-            },
-          )),
-          const SizedBox(height: 16),
 
-          // Quick Actions
+          ...parent.children.map(
+            (child) => ChildCard(
+              child: child,
+              onTap: () {
+                // ── Navigate to ChildProfileScreen ──
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        ChildProfileScreen(child: sampleChildProfile),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 16),
           const ParentQuickActionsCard(),
           const SizedBox(height: 16),
-
-          // Recent Alerts
           ParentRecentAlerts(alerts: parent.alerts),
           const SizedBox(height: 16),
         ],
@@ -115,7 +143,7 @@ class _HomeBody extends StatelessWidget {
   }
 }
 
-// Placeholder para sa hindi pa tapos na screens
+// ── Placeholder ───────────────────────────────────────────────────────────────
 class _PlaceholderScreen extends StatelessWidget {
   final String label;
   const _PlaceholderScreen({required this.label});
@@ -123,10 +151,7 @@ class _PlaceholderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text(
-        '$label coming soon!',
-        style: const TextStyle(fontSize: 16),
-      ),
+      child: Text('$label coming soon!', style: const TextStyle(fontSize: 16)),
     );
   }
 }
