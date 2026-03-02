@@ -32,7 +32,7 @@ final sampleParent = ParentUser(
   name: 'Maria',
   children: [
     ChildInfo(
-      name: 'Juan dela Cruz',
+      name: 'Carlo dela Cruz',
       beltLevel: 'Green Belt',
       status: 'Active',
       nextClass: 'Tue 5PM',
