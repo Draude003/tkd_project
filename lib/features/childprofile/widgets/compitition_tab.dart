@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import '/models/competition_model.dart';
 
-class CompetitionTab extends StatelessWidget {
-  const CompetitionTab({super.key});
+class ParentCompetitionTab extends StatelessWidget {
+  const ParentCompetitionTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.all(16),
-      children: [
-        // ── Section Header ───────────────────────────────────────
-        const Row(
-          children: [
-            SizedBox(
-              child: Icon(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Section Header ───────────────────────────────────────
+          const Row(
+            children: [
+              SizedBox(
+                child: Icon(
                 Icons.emoji_events_rounded,
                 size: 20,
                 color: Color(0xFF111111),
@@ -30,6 +32,7 @@ class CompetitionTab extends StatelessWidget {
             ),
           ],
         ),
+      
 
         const SizedBox(height: 12),
 
@@ -38,6 +41,7 @@ class CompetitionTab extends StatelessWidget {
           (competition) => _CompetitionCard(competition: competition),
         ),
       ],
+      )
     );
   }
 }

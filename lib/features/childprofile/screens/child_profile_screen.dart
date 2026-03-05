@@ -166,7 +166,7 @@ class _ChildProfileScreenState extends State<ChildProfileScreen>
             _OverviewTab(child: s),
             const AttendanceTab(),
             const BillingTab(),
-            const CompetitionTab(),
+            const ParentCompetitionTab(),
             const CertificatesTab(),
             const NotesTab(),
           ],

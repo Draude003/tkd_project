@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../models/auth_model.dart';
 import 'package:tkd/features/student/screens/student_home_screen.dart';
 import 'package:tkd/features/parent/screens/parent_home_screen.dart';
+import 'package:tkd/features/instructor/screens/instructor_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,6 +49,11 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         MaterialPageRoute(builder: (_) => const StudentHomeScreen()),
       );
+    } else if (user.role == 'instructor') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const InstructorHomeScreen()),
+      );
     } else {
       Navigator.pushReplacement(
         context,
@@ -81,11 +87,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
-                    child: Image.asset('assets/icons/imagess.png', width: 100, height: 100),
+                    child: Image.asset(
+                      'assets/icons/imagess.png',
+                      width: 100,
+                      height: 100,
+                    ),
                   ),
                 ),
               ),
@@ -144,19 +153,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextField(
                       controller: _passwordController,
                       obscureText: !_showPassword,
-                      decoration: _inputDecoration(
-                        hint: 'Enter your password',
-                        icon: Icons.lock_outline,
-                      ).copyWith(
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _showPassword ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.grey,
-                            size: 20,
+                      decoration:
+                          _inputDecoration(
+                            hint: 'Enter your password',
+                            icon: Icons.lock_outline,
+                          ).copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                              onPressed: () => setState(
+                                () => _showPassword = !_showPassword,
+                              ),
+                            ),
                           ),
-                          onPressed: () => setState(() => _showPassword = !_showPassword),
-                        ),
-                      ),
                     ),
 
                     // Error message
@@ -164,11 +178,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 16),
+                          const Icon(
+                            Icons.error_outline,
+                            color: Color(0xFFEF4444),
+                            size: 16,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             _errorMessage!,
-                            style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                            style: const TextStyle(
+                              color: Color(0xFFEF4444),
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -227,7 +248,10 @@ class _LoginScreenState extends State<LoginScreen> {
     ),
   );
 
-  InputDecoration _inputDecoration({required String hint, required IconData icon}) {
+  InputDecoration _inputDecoration({
+    required String hint,
+    required IconData icon,
+  }) {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),

@@ -19,9 +19,8 @@ class ParentBottomNavBar extends StatelessWidget {
 
   static const List<_NavItem> _items = [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
-    _NavItem(icon: Icons.credit_card_outlined, label: 'Billing'),
     _NavItem(icon: Icons.chat_bubble_outline_rounded, label: 'Chat'),
-    _NavItem(icon: Icons.campaign_outlined, label: 'Alerts'),
+    _NavItem(icon: Icons.notifications_none_rounded, label: 'Alerts'),
     _NavItem(icon: Icons.person_outline_rounded, label: 'Account'),
   ];
 

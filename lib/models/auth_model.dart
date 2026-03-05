@@ -25,6 +25,12 @@ final List<MockUser> mockUsers = [
     role: 'parent',
     name: 'Maria Dela Cruz',
   ),
+  MockUser(
+    email: 'instructor@gmail.com',
+    password: '1234',
+    role: 'instructor',
+    name: 'Sensei oleg',
+  ),
 ];
 
 MockUser? authenticate(String email, String password) {

@@ -4,8 +4,8 @@ import '../../../models/parent_model.dart';
 import '../widgets/child_card.dart';
 import '../../chat/screens/chat_screen.dart';
 import '../../alert/screens/alert_screen.dart';
-import '../../childprofile/screens/child_profile_screen.dart'; // ← added
-import '../../../models/child_profile_model.dart'; // ← added
+import '../../childprofile/screens/child_profile_screen.dart';
+import '../../../models/child_profile_model.dart';
 import '../widgets/parent_quick_actions.dart';
 import '../widgets/parent_recent_alerts.dart';
 import '../widgets/parent_bottom_nav_bar.dart';
@@ -26,7 +26,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
 
   static const List<Widget> _screens = [
     _HomeBody(),
-    _PlaceholderScreen(label: 'Billing'),
     ChatScreen(),
     AlertScreen(),
     ParentAccountScreen(),
@@ -34,7 +33,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
 
   static const List<String> _titles = [
     'Parent Portal',
-    'Billing',
     'Messages',
     'Alerts',
     'Account',
@@ -62,15 +60,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
           style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.white,
-            ),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: ParentBottomNavBar(
@@ -143,15 +132,3 @@ class _HomeBody extends StatelessWidget {
   }
 }
 
-// ── Placeholder ───────────────────────────────────────────────────────────────
-class _PlaceholderScreen extends StatelessWidget {
-  final String label;
-  const _PlaceholderScreen({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('$label coming soon!', style: const TextStyle(fontSize: 16)),
-    );
-  }
-}
