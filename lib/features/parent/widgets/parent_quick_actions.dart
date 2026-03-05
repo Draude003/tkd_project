@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tkd/features/parent/screens/quick_parent_competition_screen.dart';
 import 'package:tkd/features/student/screens/quick_attendance_screen.dart';
 import 'package:tkd/features/student/screens/quick_certificate_screen.dart';
+import 'package:tkd/features/student/screens/quick_billing_screen.dart';
 
 class ParentQuickAction {
   final String icon;
@@ -31,6 +33,10 @@ class ParentQuickActionsCard extends StatelessWidget {
       ParentQuickAction(
         icon: 'assets/icons/billing.png',
         label: 'Billing',
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const BillingScreen()),
+        ),
        
       ),
       ParentQuickAction(
@@ -43,8 +49,12 @@ class ParentQuickActionsCard extends StatelessWidget {
         
       ),
       ParentQuickAction(
-        icon: 'assets/icons/announcement.png',
-        label: 'Announcements',
+        icon: 'assets/icons/competition.png',
+        label: 'Competitions ',
+         onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ParentCompetitionScreen()),
+        ),
        
       ),
     ];

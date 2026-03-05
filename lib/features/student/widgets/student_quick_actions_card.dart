@@ -6,7 +6,7 @@ import '../screens/quick_competition_screen.dart';
 import 'section_card.dart';
 
 class StudentQuickAction {
-  final String icon; // ← String na, hindi IconData
+  final String icon; 
   final String label;
   final VoidCallback? onTap;
 
