@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tkd/features/classes/screens/class_attendance_screen.dart';
+import 'package:tkd/features/massaging/screens/massaging_screen.dart';
+import 'package:tkd/features/reports/screens/reports_screen.dart';
+import 'package:tkd/features/instructor_acc/screens/instructor_account_screen.dart'; // ← added
 import '../../../models/instructor_model.dart';
 import '../widgets/instructor_bottom_nav_bar.dart';
 import '../widgets/todays_classes_card.dart';
@@ -24,17 +27,17 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   static const List<Widget> _screens = [
     _HomeBody(),
     ClassAttendanceScreen(),
+    MessagingScreen(),
     _PlaceholderScreen(label: 'Students'),
-    _PlaceholderScreen(label: 'Reports'),
-    _PlaceholderScreen(label: 'Settings'),
+    ReportsScreen(),
   ];
 
   static const List<String> _titles = [
     'Instructor Dashboard',
     'Class Management',
+    'Messaging',
     'Students',
     'Reports',
-    'Settings',
   ];
 
   @override
@@ -49,11 +52,16 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.white,
-            ),
-            onPressed: () {},
+            icon: const Icon(Icons.account_circle_rounded, color: Colors.white),
+            onPressed: () {
+              // ── Navigate to Account Settings ──
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const InstructorAccountScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -80,7 +88,6 @@ class _HomeBody extends StatelessWidget {
         children: [
           const SizedBox(height: 8),
 
-          // Header
           Text(
             'Welcome ${instructor.name}',
             style: const TextStyle(
