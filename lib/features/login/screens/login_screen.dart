@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../models/auth_model.dart';
-import 'package:tkd/features/student/screens/student_home_screen.dart';
-import 'package:tkd/features/parent/screens/parent_home_screen.dart';
-import 'package:tkd/features/instructor/screens/instructor_home_screen.dart';
+import 'package:tkd/features/student/main_screens/student_home_screen.dart';
+import 'package:tkd/features/parent/main_screens/parent_home_screen.dart';
+import 'package:tkd/features/instructor/main_screens/instructor_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
