@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../competition_module/screens/compitition_tracking_screen.dart';
+import '../belt_promotion/screens/belt_promotion_screen.dart';
 
 class _QuickAction {
   final IconData icon;
@@ -14,10 +16,27 @@ class InstructorQuickActionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<_QuickAction> actions = [
-      _QuickAction(icon: Icons.play_circle_outline_rounded, label: 'Start Class'),
+      _QuickAction(
+        icon: Icons.play_circle_outline_rounded,
+        label: 'Start Class',
+      ),
       _QuickAction(icon: Icons.people_alt_outlined, label: 'Take Attendance'),
-      _QuickAction(icon: Icons.edit_note_rounded, label: 'Add Evaluation'),
-      _QuickAction(icon: Icons.campaign_outlined, label: 'Send Announcement'),
+      _QuickAction(
+        icon: Icons.track_changes,
+        label: 'Competition Tracking',
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const CompetitionTrackingScreen()),
+        ),
+      ),
+      _QuickAction(
+        icon: Icons.flag_outlined,
+        label: 'Belt Promotion',
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const BeltPromotionScreen()),
+        ),
+      ),
     ];
 
     return Column(
@@ -27,7 +46,10 @@ class InstructorQuickActionsCard extends StatelessWidget {
           children: [
             Container(width: 4, height: 18, color: const Color(0xFF1C1C1E)),
             const SizedBox(width: 8),
-            const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Quick Actions',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         const SizedBox(height: 12),
