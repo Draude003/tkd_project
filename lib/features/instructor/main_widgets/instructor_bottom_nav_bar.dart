@@ -19,7 +19,7 @@ class InstructorBottomNavBar extends StatelessWidget {
   static const List<_NavItem> _items = [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
     _NavItem(icon: Icons.calendar_today_rounded, label: 'Classes'),
-    _NavItem(icon: Icons.message_rounded, label: 'Message'),
+    _NavItem(icon: Icons.message_rounded, label: 'Announcement'),
     _NavItem(icon: Icons.people_alt_rounded, label: 'Students'),
     _NavItem(icon: Icons.bar_chart_rounded, label: 'Reports'),
   ];

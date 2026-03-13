@@ -278,7 +278,7 @@ class _ComposeTabState extends State<_ComposeTab> {
               onPressed: widget.onSend,
               icon: const Icon(Icons.send_rounded, size: 18),
               label: const Text(
-                'Send Message',
+                'Send Announcement',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
               style: ElevatedButton.styleFrom(
