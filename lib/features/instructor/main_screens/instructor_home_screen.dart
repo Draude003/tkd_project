@@ -36,7 +36,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   static const List<String> _titles = [
     'Instructor Dashboard',
     'Class Management',
-    'Message',
+    'Announcement',
     'Students',
     'Reports',
   ];
