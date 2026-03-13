@@ -21,6 +21,7 @@ class InstructorQuickActionsCard extends StatelessWidget {
         label: 'Start Class',
       ),
       _QuickAction(icon: Icons.people_alt_outlined, label: 'Take Attendance'),
+
       _QuickAction(
         icon: Icons.track_changes,
         label: 'Competition Tracking',
