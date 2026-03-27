@@ -1,10 +1,12 @@
 class InstructorClass {
+    final int id;
   final String time;
   final String title;
   final String description;
   final String bgColor;
 
   const InstructorClass({
+    required this.id,
     required this.time,
     required this.title,
     required this.description,
@@ -47,18 +49,21 @@ final sampleInstructor = InstructorModel(
   date: 'Today: Feb 7, 2026',
   todaysClasses: const [
     InstructorClass(
+       id: 0, 
       time: '4:00 PM',
       title: 'Kids Beginner',
       description: 'White to Yellow Belt',
       bgColor: 'orange',
     ),
     InstructorClass(
+       id: 0, 
       time: '5:30 PM',
       title: 'Teens Intermediate',
       description: 'Teens Intermediate',
       bgColor: 'teal',
     ),
     InstructorClass(
+       id: 0, 
       time: '7:00 PM',
       title: 'Adults Sparring',
       description: 'Red Belt & Above',
