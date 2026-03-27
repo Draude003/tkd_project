@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../models/auth_model.dart';
 import 'package:tkd/features/student/main_screens/student_home_screen.dart';
 import 'package:tkd/features/parent/main_screens/parent_home_screen.dart';
 import 'package:tkd/features/instructor/main_screens/instructor_home_screen.dart';
+import 'package:tkd/services/auth_services.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,48 +19,38 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   void _login() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
 
-    // simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
+  final result = await AuthService.login(
+    _emailController.text.trim(),
+    _passwordController.text.trim(),
+  );
 
-    final user = authenticate(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
+  if (!mounted) return;
 
-    if (!mounted) return;
+  if (result['success'] == true) {
+    final role = result['user']['role'];
 
-    if (user == null) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Invalid email or password.';
-      });
-      return;
-    }
-
-    setState(() => _isLoading = false);
-
-    if (user.role == 'student') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const StudentHomeScreen()),
-      );
-    } else if (user.role == 'instructor') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const InstructorHomeScreen()),
-      );
+    if (role == 'student') {
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (_) => const StudentHomeScreen()));
+    } else if (role == 'instructor') {
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (_) => const InstructorHomeScreen()));
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const ParentHomeScreen()),
-      );
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (_) => const ParentHomeScreen()));
     }
+  } else {
+    setState(() {
+      _isLoading = false;
+      _errorMessage = result['message'] ?? 'Invalid email or password.';
+    });
   }
+}
 
   @override
   void dispose() {

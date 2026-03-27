@@ -10,6 +10,8 @@ import '../main_widgets/todays_classes_card.dart';
 import '../main_widgets/instructor_quick_actions_card.dart';
 import '../main_widgets/instructor_alerts_card.dart';
 import '../main_widgets/class_stats_card.dart';
+import 'package:tkd/services/api_service.dart';
+import 'package:tkd/services/auth_services.dart';
 
 class InstructorHomeScreen extends StatefulWidget {
   const InstructorHomeScreen({super.key});
@@ -75,12 +77,64 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   }
 }
 
-class _HomeBody extends StatelessWidget {
+class _HomeBody extends StatefulWidget {
   const _HomeBody();
 
   @override
+  State<_HomeBody> createState() => _HomeBodyState();
+}
+
+class _HomeBodyState extends State<_HomeBody> {
+  List<InstructorClass> _todaysClasses = [];
+  String _name = 'Coach';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClasses();
+  }
+
+  Future<void> _loadClasses() async {
+    final classes = await ApiService.getMyClasses();
+
+    final name = await AuthService.getName();
+    final firstName = (name ?? 'Coach').split(' ').first;
+
+
+    final mapped = classes.map((cls) {
+      final schedules = cls['schedules'] as List;
+      final schedule = schedules.isNotEmpty ? schedules[0] : null;
+
+      // Assign color based on level
+      String color = 'teal';
+      final level = (cls['level'] ?? '').toString().toLowerCase();
+      if (level.contains('white')) color = 'orange';
+      if (level.contains('red') || level.contains('black')) color = 'red';
+
+      return InstructorClass(
+        id: cls['id'] ?? 0, 
+       time: schedule != null
+    ? '${schedule['start_time'] ?? 'TBD'} – ${schedule['end_time'] ?? ''}'
+    : 'TBD',
+        title: cls['class_name'] ?? 'Unknown Class',
+        description: cls['level'] ?? '',
+        bgColor: color,
+      );
+    }).toList();
+
+    setState(() {
+      _todaysClasses = mapped;
+       _name = firstName;
+      _isLoading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final instructor = sampleInstructor;
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -88,30 +142,25 @@ class _HomeBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-
-          Text(
-            'Welcome ${instructor.name}',
-            style: const TextStyle(
+           Text(
+            'Welcome! $_name :)', 
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1C1C1E),
             ),
           ),
           const SizedBox(height: 20),
-
-          TodaysClassesCard(classes: instructor.todaysClasses),
+          TodaysClassesCard(classes: _todaysClasses),
           const SizedBox(height: 20),
-
-          const InstructorQuickActionsCard(),
+          InstructorQuickActionsCard(classes: _todaysClasses),
           const SizedBox(height: 20),
-
-          InstructorAlertsCard(alerts: instructor.alerts),
+          InstructorAlertsCard(alerts: const []),
           const SizedBox(height: 20),
-
           ClassStatsCard(
-            presentCount: instructor.presentCount,
-            absentCount: instructor.absentCount,
-            lateCount: instructor.lateCount,
+            presentCount: 0,
+            absentCount: 0,
+            lateCount: 0,
           ),
           const SizedBox(height: 16),
         ],
