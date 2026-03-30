@@ -26,7 +26,8 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
   late List<StudentAttendance> _students;
   late ClassSession _session;
   late TabController _tabController;
-   bool _isLoadingStudents = true;
+  bool _isLoadingStudents = true;
+  int? _sessionId;
 
   @override
   void initState() {
@@ -38,7 +39,7 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
     );
     _session = ClassSession(
       className: widget.instructorClass.title,
-      coachName: 'Coach Eduard',
+      coachName: 'Coach',
       schedule: widget.instructorClass.time,
       isActive: true,
       students: [],
@@ -50,6 +51,9 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
   Future<void> _fetchStudents() async {
     final result = await ApiService.getClassStudents(widget.instructorClass.id);
     final rawStudents = result['students'] as List;
+
+    final sessionId = await ApiService.startSession(widget.instructorClass.id);
+    print('SESSION ID: $sessionId');
 
     final mapped = rawStudents.map((s) {
       return StudentAttendance(
@@ -63,6 +67,7 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
 
     setState(() {
       _students = mapped;
+      _sessionId = sessionId;
       _session = ClassSession(
         className: widget.instructorClass.title,
         coachName: 'Coach',
@@ -107,6 +112,52 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
         s.isSelected = false;
       }
     });
+  }
+
+  Future<void> _saveAttendance() async {
+    // Kung null ang session, mag-start ulit
+    if (_sessionId == null) {
+      final sessionId = await ApiService.startSession(
+        widget.instructorClass.id,
+      );
+      setState(() => _sessionId = sessionId);
+    }
+
+    if (_sessionId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not start session. Try again.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    final attendances = _students
+        .map((s) => {'student_id': int.parse(s.id), 'status': s.status.name})
+        .toList();
+
+    final success = await ApiService.saveAttendance(_sessionId!, attendances);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Attendance saved successfully!'
+                : 'Failed to save attendance',
+          ),
+          backgroundColor: success ? const Color(0xFF22C55E) : Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
   }
 
   void _showClassNotesDialog() {
@@ -190,6 +241,7 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
     required IconData icon,
     required String label,
     required VoidCallback? onTap,
+    Color? color,
   }) {
     return Expanded(
       child: ElevatedButton.icon(
@@ -200,7 +252,7 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1C1C1E),
+          backgroundColor: color ?? const Color(0xFF1C1C1E),
           foregroundColor: Colors.white,
           disabledBackgroundColor: Colors.grey.shade200,
           disabledForegroundColor: Colors.grey,
@@ -233,7 +285,6 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
       ),
       body: Column(
         children: [
-          // TabBar — dito sa taas
           Container(
             color: Colors.white,
             child: TabBar(
@@ -251,15 +302,13 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
               ],
             ),
           ),
-
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                // Tab 1 — Session Plan
                 SessionPlanTab(className: widget.instructorClass.title),
 
-                // Tab 2 — Attendance
+                // Attendance Tab
                 Column(
                   children: [
                     Expanded(
@@ -285,6 +334,7 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
                         ),
                       ),
                     ),
+
                     // Bottom Action Buttons
                     Container(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -300,6 +350,7 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
                       ),
                       child: Column(
                         children: [
+                          // Row 1 — Present + Late
                           Row(
                             children: [
                               _actionButton(
@@ -322,8 +373,20 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
                             ],
                           ),
                           const SizedBox(height: 10),
+
+                          // Row 2 — Absent + Excuse
                           Row(
                             children: [
+                              _actionButton(
+                                icon: Icons.cancel_outlined,
+                                label: 'Absent',
+                                onTap: _selectedCount > 0
+                                    ? () =>
+                                          _markSelected(AttendanceStatus.absent)
+                                    : null,
+                                color: const Color(0xFFB91C1C),
+                              ),
+                              const SizedBox(width: 10),
                               _actionButton(
                                 icon: Icons.person_off_outlined,
                                 label: 'Excuse',
@@ -333,32 +396,26 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
                                       )
                                     : null,
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Row 3 — Class Notes + Save Attendance
+                          Row(
+                            children: [
+                              _actionButton(
+                                icon: Icons.note_alt_outlined,
+                                label: 'Class Notes',
+                                onTap: _showClassNotesDialog,
+                              ),
                               const SizedBox(width: 10),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: _showClassNotesDialog,
-                                  icon: const Icon(
-                                    Icons.note_alt_outlined,
-                                    size: 16,
-                                  ),
-                                  label: const Text(
-                                    'Class Notes',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1C1C1E),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
+                              _actionButton(
+                                icon: Icons.save_rounded,
+                                label: 'Save Attendance',
+                                onTap: _sessionId != null
+                                    ? _saveAttendance
+                                    : null,
+                                color: const Color(0xFF22C55E),
                               ),
                             ],
                           ),

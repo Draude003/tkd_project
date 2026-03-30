@@ -10,6 +10,7 @@ import '../progress_module/screens/progress_screen.dart';
 import '../chat_module/screens/chat_screen.dart';
 import '../announcement_module/screens/announcement_screen.dart';
 import '../account_module/screens/student_account_screen.dart';
+import 'package:tkd/services/api_service.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -72,12 +73,45 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 }
 
 // Home tab content (extracted as separate widget)
-class _HomeBody extends StatelessWidget {
+class _HomeBody extends StatefulWidget {
   const _HomeBody();
 
   @override
+  State<_HomeBody> createState() => _HomeBodyState();
+}
+
+class _HomeBodyState extends State<_HomeBody> {
+  Student? _student;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final data = await ApiService.getStudentProfile();
+    if (data != null) {
+      setState(() {
+        _student = Student.fromJson(data);
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _student = sampleStudent;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final student = sampleStudent;
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final student = _student!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -86,10 +120,10 @@ class _HomeBody extends StatelessWidget {
         children: [
           const SizedBox(height: 8),
           Text(
-            'Good morning, ${student.name.split(' ').first}',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            'Welcome! ${student.name.split(' ').first}',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           ProfileCard(student: student),

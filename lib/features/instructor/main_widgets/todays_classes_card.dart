@@ -7,10 +7,14 @@ class TodaysClassesCard extends StatelessWidget {
 
   Color _getBgColor(String colorName) {
     switch (colorName) {
-      case 'orange': return const Color(0xFFE8682A);
-      case 'teal':   return const Color(0xFF1D7A6F);
-      case 'red':    return const Color(0xFFB91C1C);
-      default:       return const Color(0xFF1D7A6F);
+      case 'orange':
+        return const Color(0xFFE8682A);
+      case 'teal':
+        return const Color(0xFF1D7A6F);
+      case 'red':
+        return const Color(0xFFB91C1C);
+      default:
+        return const Color(0xFF1D7A6F);
     }
   }
 
@@ -38,11 +42,15 @@ class TodaysClassesCard extends StatelessWidget {
           children: [
             Container(width: 4, height: 18, color: const Color(0xFF1C1C1E)),
             const SizedBox(width: 8),
-            const Text("Today's Classes",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              "Today's Classes",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const Spacer(),
-            Text('${classes.length} class${classes.length != 1 ? 'es' : ''}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+            Text(
+              '${classes.length} class${classes.length != 1 ? 'es' : ''}',
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -102,106 +110,124 @@ class _ClassTile extends StatelessWidget {
     required this.bg,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: bg.withOpacity(0.25)),
-        boxShadow: [
-          BoxShadow(
-            color: bg.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            // Left colored time block
-            Container(
-              width: 76,
-              decoration: BoxDecoration(
-                color: bg,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(11),
-                  bottomLeft: Radius.circular(11),
-                ),
+@override
+Widget build(BuildContext context) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: bg.withOpacity(0.2)),
+      boxShadow: [
+        BoxShadow(
+          color: bg.withOpacity(0.08),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: IntrinsicHeight(
+      child: Row(
+        children: [
+          // Left colored block — time + day
+          Container(
+            width: 80,
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(11),
+                bottomLeft: Radius.circular(11),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Day label
+                if (cls.dayOfWeek.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    margin: const EdgeInsets.only(bottom: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      cls.dayOfWeek.substring(0, 3).toUpperCase(), // MON, TUE, etc.
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                Text(
+                  start,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Container(height: 1, width: 28, color: Colors.white30),
+                const SizedBox(height: 3),
+                Text(
+                  end,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Class info
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    start,
-                    textAlign: TextAlign.center,
+                    cls.title,
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      height: 1.2,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1C1C1E),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Container(height: 1, width: 28, color: Colors.white38),
-                  const SizedBox(height: 4),
-                  Text(
-                    end,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: bg.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      cls.description,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: bg,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Class info
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      cls.title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1C1C1E),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: bg.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        cls.description,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: bg,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _EmptyState extends StatelessWidget {
@@ -213,8 +239,10 @@ class _EmptyState extends StatelessWidget {
         children: [
           Icon(Icons.event_busy_rounded, size: 36, color: Color(0xFFBDBDBD)),
           SizedBox(height: 8),
-          Text('No classes today',
-              style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 14)),
+          Text(
+            'No classes today',
+            style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 14),
+          ),
         ],
       ),
     );

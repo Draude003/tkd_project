@@ -13,7 +13,6 @@ class Student {
   final String branch;
   final String linkedParent;
 
-
   const Student({
     required this.name,
     required this.beltLevel,
@@ -32,9 +31,26 @@ class Student {
 
   String get classAttendanceSummary => '$classesAttended/$totalClasses';
   String get progressScoreLabel => '$progressScore%';
+
+  factory Student.fromJson(Map<String, dynamic> json) {
+    return Student(
+      name: json['name'] ?? '',
+      beltLevel: json['belt'] ?? 'No Belt',
+      instructor: json['instructor'] ?? 'TBA',
+      nextClass: json['next_class'] ?? 'No class scheduled',
+      classesAttended: json['classes_attended'] ?? 0,
+      totalClasses: json['total_classes'] ?? 0,
+      progressScore: 0,
+      checkInTime: '',
+      alerts: [],
+      age: json['age'] ?? 0,
+      program: '',
+      branch: json['branch']?.toString() ?? '',
+      linkedParent: '',
+    );
+  }
 }
 
-// Sample data
 final sampleStudent = Student(
   name: 'Juan dela cruz',
   beltLevel: 'Green Belt',
@@ -44,10 +60,7 @@ final sampleStudent = Student(
   totalClasses: 9,
   progressScore: 82,
   checkInTime: '4:58 PM (FaceScan)',
-  alerts: [
-    'Belt exam sheduled for September 20',
-    'New message from your coach',
-  ],
+  alerts: ['Belt exam scheduled for September 20'],
   age: 15,
   program: 'Junior Sparring',
   branch: 'TKD Main Dojang',
