@@ -1,9 +1,10 @@
 class InstructorClass {
-    final int id;
+  final int id;
   final String time;
   final String title;
   final String description;
   final String bgColor;
+  final String dayOfWeek;
 
   const InstructorClass({
     required this.id,
@@ -11,6 +12,8 @@ class InstructorClass {
     required this.title,
     required this.description,
     required this.bgColor,
+    this.dayOfWeek = '',
+    
   });
 }
 
