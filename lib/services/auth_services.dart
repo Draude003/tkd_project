@@ -48,4 +48,12 @@ class AuthService {
   final token = await getToken();
   return token != null && token.isNotEmpty;
 }
+
+static Future<void> saveFromFaceLogin(Map<String, dynamic> data) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('token', data['token']);
+  await prefs.setString('role', data['user']['role']);
+  await prefs.setString('name', data['user']['name'] ?? '');
+}
+
 }
