@@ -16,6 +16,11 @@ class AnnouncementDetailModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasEventInfo = announcement.date.isNotEmpty ||
+        announcement.eventTime.isNotEmpty ||
+        announcement.location.isNotEmpty ||
+        announcement.fee.isNotEmpty;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -82,19 +87,31 @@ class AnnouncementDetailModal extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 20),
 
-          // Event Information
-          const Text(
-            'Event Information',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          _InfoTile(label: 'DATE & TIME', value: '${announcement.date} • 9:00 AM'),
-          const SizedBox(height: 8),
-          _InfoTile(label: 'LOCATION', value: announcement.location),
-          const SizedBox(height: 8),
-          _InfoTile(label: 'EXAM FEE', value: announcement.fee),
+          // Event Information — ipakita lang kung may value
+          if (hasEventInfo) ...[
+            const SizedBox(height: 20),
+            const Text(
+              'Event Information',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            if (announcement.date.isNotEmpty)
+              _InfoTile(
+                label: 'DATE & TIME',
+                value: announcement.eventTime.isNotEmpty
+                    ? '${announcement.date} • ${announcement.eventTime}'
+                    : announcement.date,
+              ),
+            if (announcement.location.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _InfoTile(label: 'LOCATION', value: announcement.location),
+            ],
+            if (announcement.fee.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _InfoTile(label: 'FEE', value: announcement.fee),
+            ],
+          ],
         ],
       ),
     );

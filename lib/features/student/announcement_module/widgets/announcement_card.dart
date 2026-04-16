@@ -80,8 +80,8 @@ class AnnouncementCard extends StatelessWidget {
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
                 ),
                 OutlinedButton(
-                  onPressed: () =>{
-                    AnnouncementDetailModal.show(context, announcement), // para pag click sa view details
+                  onPressed: () {
+                    AnnouncementDetailModal.show(context, announcement);
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.black,

@@ -1,19 +1,30 @@
 class ChildInfo {
+  final int id;
   final String name;
   final String beltLevel;
   final String status;
   final String nextClass;
   final String balance;
-  final String avatarAsset;
 
   const ChildInfo({
+    required this.id,
     required this.name,
     required this.beltLevel,
     required this.status,
     required this.nextClass,
     required this.balance,
-    required this.avatarAsset,
   });
+
+  factory ChildInfo.fromJson(Map<String, dynamic> json) {
+    return ChildInfo(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      beltLevel: json['belt'] ?? 'No Belt',
+      status: json['status'] ?? 'active',
+      nextClass: json['next_class'] ?? 'No class scheduled',
+      balance: json['balance'] ?? '₱0',
+    );
+  }
 }
 
 class ParentUser {
@@ -26,31 +37,14 @@ class ParentUser {
     required this.children,
     required this.alerts,
   });
-}
 
-final sampleParent = ParentUser(
-  name: 'Maria',
-  children: [
-    ChildInfo(
-      name: 'Carlo dela Cruz',
-      beltLevel: 'Green Belt',
-      status: 'Active',
-      nextClass: 'Tue 5PM',
-      balance: '₱0',
-      avatarAsset: 'assets/icons/profile.png',
-    ),
-    ChildInfo(
-      name: 'Ana dela Cruz',
-      beltLevel: 'Green Belt',
-      status: 'Active',
-      nextClass: 'Tue 5PM',
-      balance: '₱800',
-      avatarAsset: 'assets/icons/profile.png',
-    ),
-  ],
-  alerts: [
-    'Belt exam scheduled for September 20',
-    'Payment reminder for Ana dela Cruz - due in 3 days',
-    'Competition registration opens next week',
-  ],
-);
+  factory ParentUser.fromJson(Map<String, dynamic> json) {
+    return ParentUser(
+      name: json['name'] ?? '',
+      children: (json['children'] as List<dynamic>? ?? [])
+          .map((c) => ChildInfo.fromJson(c))
+          .toList(),
+      alerts: List<String>.from(json['alerts'] ?? []),
+    );
+  }
+}

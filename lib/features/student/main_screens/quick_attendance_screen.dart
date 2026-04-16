@@ -11,14 +11,19 @@ class AttendanceScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1C1C1E),
         foregroundColor: Colors.white,
-         iconTheme: const IconThemeData(color: Colors.white),
-         titleSpacing: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleSpacing: 0,
         title: const Text(
           'Attendance',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
         ),
         elevation: 0,
       ),
+      
       body: const SingleChildScrollView(
         padding: EdgeInsets.symmetric(vertical: 16),
         child: AttendanceTab(),

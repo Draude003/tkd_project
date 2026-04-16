@@ -128,7 +128,7 @@ class _HomeBodyState extends State<_HomeBody> {
           const SizedBox(height: 16),
           ProfileCard(student: student),
           const SizedBox(height: 16),
-          StatusTodayCard(checkInTime: student.checkInTime),
+          StatusTodayCard(checkInTime: student.checkInTime, loginType: student.loginType),
           const SizedBox(height: 16),
           const StudentQuickActionsCard(),
           const SizedBox(height: 16),

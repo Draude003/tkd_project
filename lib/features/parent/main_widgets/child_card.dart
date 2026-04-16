@@ -31,7 +31,7 @@ class ChildCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Center(
-                    child: Image.asset(child.avatarAsset, width: 36, height: 36),
+                   
                   ),
                 ),
                 const SizedBox(width: 12),

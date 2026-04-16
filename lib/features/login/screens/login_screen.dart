@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Map<String, dynamic>? _matchedStudent;
 
-  static const String baseUrl = 'http://192.168.68.107:8000/api';
+  static const String baseUrl = 'http://192.168.68.105:8000/api';
 
   @override
   void initState() {

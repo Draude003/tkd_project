@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tkd/features/instructor/classes_module/screens/class_attendance_screen.dart';
-import 'package:tkd/features/instructor/messages_module/screens/massaging_screen.dart';
+import 'package:tkd/features/instructor/announcement_module/screens/instructor_Announce_screen.dart';
 import 'package:tkd/features/instructor/reports_module/screens/reports_screen.dart';
 import 'package:tkd/features/instructor/account_settings_module/screens/instructor_account_screen.dart';
 import 'package:tkd/features/instructor/main_screens/instructor_students_screen.dart';
@@ -29,16 +28,15 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
 
   static const List<Widget> _screens = [
     _HomeBody(),
-    ClassAttendanceScreen(),
-    MessagingScreen(),
+    InstructorAnnounceScreen(),
     InstructorStudentsScreen(),
     ReportsScreen(),
   ];
 
   static const List<String> _titles = [
     'Instructor Dashboard',
+    'Announcements',
     'Class Management',
-    'Announcement',
     'Students',
     'Reports',
   ];
@@ -150,7 +148,7 @@ class _HomeBodyState extends State<_HomeBody> {
           children: [
             const SizedBox(height: 8),
             Text(
-              'Welcome! $_name :)',
+              'Welcome! $_name',
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,

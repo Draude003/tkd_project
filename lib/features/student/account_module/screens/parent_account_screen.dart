@@ -48,7 +48,7 @@ class ParentAccountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final parent = sampleParent;
+   
 
     return SingleChildScrollView(
       child: Column(
@@ -77,7 +77,7 @@ class ParentAccountScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  parent.name,
+                  'Alex Johnson',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -101,7 +101,7 @@ class ParentAccountScreen extends StatelessWidget {
               children: [
                 const GuardianInfoCard(),
                 const SizedBox(height: 20),
-                LinkedStudentsCard(children: parent.children),
+                
                 const SizedBox(height: 20),
                 const NotificationPreferencesCard(),
                 const SizedBox(height: 20),

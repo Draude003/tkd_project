@@ -49,35 +49,34 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
   }
 
   Future<void> _fetchStudents() async {
-    final result = await ApiService.getClassStudents(widget.instructorClass.id);
-    final rawStudents = result['students'] as List;
+  final result = await ApiService.getClassStudents(widget.instructorClass.id);
+  final rawStudents = result['students'] as List;
 
-    final sessionId = await ApiService.startSession(widget.instructorClass.id);
-    print('SESSION ID: $sessionId');
+  final sessionId = await ApiService.startSession(widget.instructorClass.id);
 
-    final mapped = rawStudents.map((s) {
-      return StudentAttendance(
-        id: s['id'].toString(),
-        name: s['name'] ?? 'Unknown',
-        beltLevel: s['belt'] ?? 'No Belt',
-        beltColor: _beltColor(s['belt'] ?? ''),
-        checkInMethod: 'Manual',
-      );
-    }).toList();
+  final mapped = rawStudents.map((s) {
+    return StudentAttendance(
+      id: s['id'].toString(),
+      name: s['name'] ?? 'Unknown',
+      beltLevel: s['belt'] ?? 'No Belt',
+      beltColor: _beltColor(s['belt'] ?? ''),
+      loginType: s['login_type'] ?? 'not_logged_in',
+    );
+  }).toList();
 
-    setState(() {
-      _students = mapped;
-      _sessionId = sessionId;
-      _session = ClassSession(
-        className: widget.instructorClass.title,
-        coachName: 'Coach',
-        schedule: widget.instructorClass.time,
-        isActive: true,
-        students: _students,
-      );
-      _isLoadingStudents = false;
-    });
-  }
+  setState(() {
+    _students = mapped;
+    _sessionId = sessionId;
+    _session = ClassSession(
+      className: widget.instructorClass.title,
+      coachName: 'Coach',
+      schedule: widget.instructorClass.time,
+      isActive: true,
+      students: _students,
+    );
+    _isLoadingStudents = false;
+  });
+}
 
   Color _beltColor(String belt) {
     final b = belt.toLowerCase();
@@ -135,30 +134,43 @@ class _QuickStartClassScreenState extends State<QuickStartClassScreen>
       }
       return;
     }
+    
 
-    final attendances = _students
-        .map((s) => {'student_id': int.parse(s.id), 'status': s.status.name})
-        .toList();
+     final attendances = _students
+      .where((s) => s.status != AttendanceStatus.notMarked) // idagdag ito
+      .map((s) => {
+        'student_id': int.parse(s.id),
+        'status': s.status.name,
+      }).toList();
 
-    final success = await ApiService.saveAttendance(_sessionId!, attendances);
-
+  if (attendances.isEmpty) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? 'Attendance saved successfully!'
-                : 'Failed to save attendance',
-          ),
-          backgroundColor: success ? const Color(0xFF22C55E) : Colors.red,
+        const SnackBar(
+          content: Text('Please mark at least one student first.'),
+          backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
         ),
       );
     }
+    return;
   }
+
+  final success = await ApiService.saveAttendance(_sessionId!, attendances);
+
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success ? 'Attendance saved successfully!' : 'Failed to save attendance',
+        ),
+        backgroundColor: success ? const Color(0xFF22C55E) : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+}
 
   void _showClassNotesDialog() {
     showModalBottomSheet(

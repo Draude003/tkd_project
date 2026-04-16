@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'auth_services.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.68.107:8000/api';
+  static const String baseUrl = 'http://192.168.68.105:8000/api';
 
   static Future<Map<String, String>> get _headers async {
     final token = await AuthService.getToken();
@@ -110,10 +110,86 @@ class ApiService {
         headers: await _headers,
       );
       final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        final profile = data['data'] as Map<String, dynamic>;
+        final loginType = await AuthService.getLoginType();
+        profile['login_type'] = loginType; // <-- inject login_type
+        return profile;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getStudentAttendance() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/student/attendance'),
+        headers: await _headers,
+      );
+      final data = jsonDecode(response.body);
       if (data['success'] == true) return data['data'];
       return null;
     } catch (e) {
       return null;
     }
   }
+
+  static Future<List<dynamic>> getAnnouncements() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/announcements'),
+        headers: await _headers,
+      );
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) return data['data'];
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<bool> sendAnnouncement(Map<String, dynamic> payload) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/announcements'),
+        headers: await _headers,
+        body: jsonEncode(payload),
+      );
+      final data = jsonDecode(response.body);
+      return data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+static Future<Map<String, dynamic>?> getParentProfile() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/parent/profile'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<Map<String, dynamic>?> getChildProfile(int childId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/parent/child/$childId'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
 }

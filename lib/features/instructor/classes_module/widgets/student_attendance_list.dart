@@ -18,7 +18,6 @@ class StudentAttendanceList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -137,7 +136,7 @@ class _StudentTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Name + Belt
+          // Name + Belt + Login Type
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,10 +160,7 @@ class _StudentTile extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      student.checkInMethod,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 11),
-                    ),
+                    _LoginTypeBadge(loginType: student.loginType),
                   ],
                 ),
               ],
@@ -172,6 +168,53 @@ class _StudentTile extends StatelessWidget {
           ),
           // Status
           _statusWidget(student.status),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoginTypeBadge extends StatelessWidget {
+  final String loginType;
+  const _LoginTypeBadge({required this.loginType});
+
+  @override
+  Widget build(BuildContext context) {
+    if (loginType == 'not_logged_in') {
+      return Text('Not Logged In', style: TextStyle(color: Colors.grey[400], fontSize: 11));
+    }
+
+    final isFaceScan = loginType == 'face_scan';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: isFaceScan
+            ? Colors.green.withOpacity(0.12)
+            : Colors.orange.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isFaceScan ? Colors.green : Colors.orange,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isFaceScan ? Icons.face_retouching_natural : Icons.keyboard_alt_outlined,
+            size: 11,
+            color: isFaceScan ? Colors.green : Colors.orange,
+          ),
+          const SizedBox(width: 3),
+          Text(
+            isFaceScan ? 'Face Scan' : 'Manual',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: isFaceScan ? Colors.green : Colors.orange,
+            ),
+          ),
         ],
       ),
     );
