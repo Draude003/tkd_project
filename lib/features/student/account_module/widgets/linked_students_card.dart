@@ -54,7 +54,7 @@ class _StudentTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: Image.asset(child.avatarAsset, width: 28, height: 28),
+             
             ),
           ),
           const SizedBox(width: 12),

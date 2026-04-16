@@ -1,4 +1,4 @@
-enum MessageRecipientType { parents, student, classGroup }
+enum MessageRecipientType { all, parents, student, classGroup }
 
 class MessageRecipientModel {
   final MessageRecipientType type;
@@ -13,8 +13,10 @@ class MessageRecipientModel {
     this.isSelected = false,
   });
 
-  String get iconAsset {
+  String get emoji {
     switch (type) {
+      case MessageRecipientType.all:
+        return '📢';
       case MessageRecipientType.parents:
         return '👨‍👩‍👧';
       case MessageRecipientType.student:
@@ -23,97 +25,58 @@ class MessageRecipientModel {
         return '💬';
     }
   }
+
+  String get targetType {
+    switch (type) {
+      case MessageRecipientType.all:
+        return 'all';
+      case MessageRecipientType.parents:
+        return 'parents';
+      case MessageRecipientType.student:
+        return 'students';
+      case MessageRecipientType.classGroup:
+        return 'class';
+    }
+  }
 }
 
 class SentMessageModel {
   final String id;
+  final String title;
   final String content;
-  final String sentTo; // e.g. "All Parents", "Kids Beginner"
-  final String time; // e.g. "10:32 AM", "Yesterday", "Feb 22"
-  final int sentCount;
-  final int readCount;
+  final String sentTo;
+  final String time;
 
   const SentMessageModel({
     required this.id,
+    required this.title,
     required this.content,
     required this.sentTo,
     required this.time,
-    required this.sentCount,
-    required this.readCount,
   });
+
+  factory SentMessageModel.fromJson(Map<String, dynamic> json) {
+    return SentMessageModel(
+      id: json['id'].toString(),
+      title: json['title'] ?? '',
+      content: json['message'] ?? '',
+      sentTo: json['target_type'] ?? 'all',
+      time: json['publish_date'] != null
+          ? _formatDate(json['publish_date'])
+          : '',
+    );
+  }
+
+  static String _formatDate(String raw) {
+    try {
+      final dt = DateTime.parse(raw);
+      const months = [
+        'Jan','Feb','Mar','Apr','May','Jun',
+        'Jul','Aug','Sept','Oct','Nov','Dec'
+      ];
+      return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
+    } catch (_) {
+      return raw;
+    }
+  }
 }
-
-class BroadcastTypeModel {
-  final String title;
-  final String description;
-  final String emoji;
-
-  const BroadcastTypeModel({
-    required this.title,
-    required this.description,
-    required this.emoji,
-  });
-}
-
-// ── Sample Data ───────────────────────────────────────────────────────────────
-final List<SentMessageModel> sampleSentMessages = [
-  const SentMessageModel(
-    id: 'msg-001',
-    sentTo: 'All Parents',
-    time: '10:32 AM',
-    content:
-        'Belt exam this Saturday at 9AM. Please have students arrive 15 minutes early.',
-    sentCount: 18,
-    readCount: 14,
-  ),
-  const SentMessageModel(
-    id: 'msg-002',
-    sentTo: 'Kids Beginner',
-    time: 'Yesterday',
-    content:
-        'No class this Friday due to gym maintenance. Classes resume Monday.',
-    sentCount: 18,
-    readCount: 14,
-  ),
-  const SentMessageModel(
-    id: 'msg-003',
-    sentTo: 'All Students',
-    time: 'Feb 22',
-    content:
-        'Reminder: Tournament sign-up deadline is Feb 15. See Coach Angel for forms.',
-    sentCount: 18,
-    readCount: 14,
-  ),
-  const SentMessageModel(
-    id: 'msg-004',
-    sentTo: 'Kids Beginner',
-    time: 'Yesterday',
-    content:
-        'No class this Friday due to gym maintenance. Classes resume Monday.',
-    sentCount: 18,
-    readCount: 14,
-  ),
-];
-
-final List<BroadcastTypeModel> sampleBroadcastTypes = [
-  const BroadcastTypeModel(
-    title: 'Class Broadcast',
-    description: 'Send to all student in a specific class',
-    emoji: '👥',
-  ),
-  const BroadcastTypeModel(
-    title: 'Parent - Only Notice',
-    description: 'Private message to parent contacts only',
-    emoji: '👤',
-  ),
-  const BroadcastTypeModel(
-    title: 'Belt Exam Reminder',
-    description: 'Auto - notify exam candidates & parents',
-    emoji: '🔔',
-  ),
-  const BroadcastTypeModel(
-    title: 'School Wide Announcement',
-    description: 'Broadcast to entire school community',
-    emoji: '📢',
-  ),
-];

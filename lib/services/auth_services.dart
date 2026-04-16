@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://192.168.68.107:8000/api';
+  static const String baseUrl = 'http://192.168.68.105:8000/api';
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
     try {
@@ -16,11 +16,11 @@ class AuthService {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['success'] == true) {
-        // Save token
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['token']);
         await prefs.setString('role', data['user']['role']);
         await prefs.setString('name', data['user']['name'] ?? '');
+        await prefs.setString('login_type', 'manual'); // <-- manual login
       }
 
       return data;
@@ -39,21 +39,26 @@ class AuthService {
     return prefs.getString('token');
   }
 
-   static Future<String?> getName() async {
+  static Future<String?> getName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('name');
   }
 
   static Future<bool> isLoggedIn() async {
-  final token = await getToken();
-  return token != null && token.isNotEmpty;
-}
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
 
-static Future<void> saveFromFaceLogin(Map<String, dynamic> data) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('token', data['token']);
-  await prefs.setString('role', data['user']['role']);
-  await prefs.setString('name', data['user']['name'] ?? '');
-}
+  static Future<void> saveFromFaceLogin(Map<String, dynamic> data) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', data['token']);
+    await prefs.setString('role', data['user']['role']);
+    await prefs.setString('name', data['user']['name'] ?? '');
+    await prefs.setString('login_type', data['login_type'] ?? 'face_scan'); // <-- face login
+  }
 
+  static Future<String> getLoginType() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('login_type') ?? '';
+  }
 }

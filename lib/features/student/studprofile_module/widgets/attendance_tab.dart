@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tkd/services/api_service.dart';
 
 class AttendanceTab extends StatefulWidget {
   const AttendanceTab({super.key});
@@ -11,83 +12,41 @@ class _AttendanceTabState extends State<AttendanceTab> {
   int _selectedFilter = 0;
   final List<String> _filters = ['All', 'Present', 'Absent', 'Late'];
 
-  final List<Map<String, dynamic>> _allRecords = [
-    {
-      'day': '7',
-      'month': 'SEPT',
-      'status': 'Present',
-      'method': 'Face Scan',
-      'time': '4:58 PM',
-    },
-    {
-      'day': '3',
-      'month': 'SEPT',
-      'status': 'Present',
-      'method': 'Face Scan',
-      'time': '5:15PM',
-    },
-    {
-      'day': '5',
-      'month': 'SEPT',
-      'status': 'Absent',
-      'method': 'Face Scan',
-      'time': '-',
-    },
-    {
-      'day': '8',
-      'month': 'SEPT',
-      'status': 'Present',
-      'method': 'Face Scan',
-      'time': '4:58 PM',
-    },
-    {
-      'day': '9',
-      'month': 'SEPT',
-      'status': 'Late',
-      'method': 'Face Scan',
-      'time': '4:58 PM',
-    },
-    {
-      'day': '10',
-      'month': 'SEPT',
-      'status': 'Present',
-      'method': 'Face Scan',
-      'time': '4:58 PM',
-    },
-    {
-      'day': '11',
-      'month': 'SEPT',
-      'status': 'Present',
-      'method': 'Face Scan',
-      'time': '4:58 PM',
-    },
-    {
-      'day': '12',
-      'month': 'SEPT',
-      'status': 'Absent',
-      'method': 'Face Scan',
-      'time': '-',
-    },
-    {
-      'day': '13',
-      'month': 'SEPT',
-      'status': 'Late',
-      'method': 'Face Scan',
-      'time': '4:58 PM',
-    },
-  ];
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _allRecords = [];
+  int _presentCount = 0;
+  int _absentCount = 0;
+  int _lateCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAttendance();
+  }
+
+  Future<void> _loadAttendance() async {
+    final data = await ApiService.getStudentAttendance();
+    if (data != null) {
+      final records = (data['records'] as List)
+          .map((r) => Map<String, dynamic>.from(r))
+          .toList();
+      setState(() {
+        _allRecords = records;
+        _presentCount = data['summary']['present'] ?? 0;
+        _absentCount = data['summary']['absent'] ?? 0;
+        _lateCount = data['summary']['late'] ?? 0;
+        _isLoading = false;
+      });
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
 
   List<Map<String, dynamic>> get _filteredRecords {
     if (_selectedFilter == 0) return _allRecords;
     final label = _filters[_selectedFilter];
     return _allRecords.where((r) => r['status'] == label).toList();
   }
-
-  int get _presentCount =>
-      _allRecords.where((r) => r['status'] == 'Present').length;
-  int get _absentCount =>
-      _allRecords.where((r) => r['status'] == 'Absent').length;
-  int get _lateCount => _allRecords.where((r) => r['status'] == 'Late').length;
 
   Widget _summaryCard({
     required int count,
@@ -157,7 +116,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                 Text(
                   record['day'],
                   style: const TextStyle(
-                    color: Color(0xFF1C1C1E), // 👈 dati white, ngayon dark
+                    color: Color(0xFF1C1C1E),
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -214,7 +173,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                 const SizedBox(height: 3),
                 Text(
                   record['method'],
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12), // 👈 dati grey[600]
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
               ],
             ),
@@ -230,6 +189,10 @@ class _AttendanceTabState extends State<AttendanceTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -348,14 +311,14 @@ class _AttendanceTabState extends State<AttendanceTab> {
           ),
           const SizedBox(height: 16),
 
-          // Attendance History Card — 👈 white na, same style ng Summary
+          // Attendance History
           Container(
             decoration: BoxDecoration(
-              color: Colors.white, // 👈 dati black
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05), // 👈 dagdag
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -367,12 +330,12 @@ class _AttendanceTabState extends State<AttendanceTab> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.list_alt, color: Color(0xFF1C1C1E), size: 18), // 👈 dati white
+                    Icon(Icons.list_alt, color: Color(0xFF1C1C1E), size: 18),
                     SizedBox(width: 8),
                     Text(
                       'Attendance History',
                       style: TextStyle(
-                        color: Color(0xFF1C1C1E), // 👈 dati white
+                        color: Color(0xFF1C1C1E),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -380,7 +343,6 @@ class _AttendanceTabState extends State<AttendanceTab> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                ..._filteredRecords.map((r) => _historyRow(r)),
                 if (_filteredRecords.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
@@ -390,6 +352,13 @@ class _AttendanceTabState extends State<AttendanceTab> {
                         style: TextStyle(color: Colors.grey[500], fontSize: 14),
                       ),
                     ),
+                  )
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _filteredRecords.length,
+                    itemBuilder: (_, i) => _historyRow(_filteredRecords[i]),
                   ),
               ],
             ),

@@ -35,26 +35,26 @@ class ChildProfileModel {
     required this.awardsCount,
     required this.skills,
   });
+  
+  factory ChildProfileModel.fromJson(Map<String, dynamic> json) {
+    return ChildProfileModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] ?? '',
+      age: json['age'] != null ? '${json['age']} years old' : 'N/A',
+      belt: json['belt'] ?? 'No Belt',
+      instructor: json['instructor'] ?? 'TBA',
+      classSchedule: json['next_class'] ?? 'No class scheduled',
+      memberSince: json['member_since'] ?? 'N/A',
+      nextBeltTest: json['next_belt_test'] ?? 'TBA',
+      classesPerWeek: json['classes_per_week'] ?? 0,
+      attendancePercentage: (json['attendance_percentage'] ?? 0).toDouble(),
+      monthsTraining: json['months_training'] ?? 0,
+      awardsCount: json['awards_count'] ?? 0,
+      skills: [],
+    );
+  }
 }
 
-// ── Sample Data ──────────────────────────────────────────────────────────────
-final sampleChildProfile = ChildProfileModel(
-  id: '1',
-  name: 'Benedick James Caber',
-  age: '21 years old',
-  belt: 'Green Belt',
-  instructor: 'Master Kagami',
-  classSchedule: 'Tuesday / Thursday - 5:00 PM',
-  memberSince: 'March 2024',
-  nextBeltTest: 'Sept 20, 2024',
-  classesPerWeek: 2,
-  attendancePercentage: 94,
-  monthsTraining: 6,
-  awardsCount: 3,
-  skills: const [
-    ChildProfileSkill(name: 'Kicks', percentage: 0.78),
-    ChildProfileSkill(name: 'Forms', percentage: 0.81),
-    ChildProfileSkill(name: 'Sparring', percentage: 0.69),
-    ChildProfileSkill(name: 'Discipline', percentage: 0.73),
-  ],
-);
+
+
+

@@ -7,6 +7,7 @@ class Student {
   final int totalClasses;
   final int progressScore;
   final String checkInTime;
+  final String loginType;
   final List<String> alerts;
   final int age;
   final String program;
@@ -22,6 +23,7 @@ class Student {
     required this.totalClasses,
     required this.progressScore,
     required this.checkInTime,
+    this.loginType = '',
     required this.alerts,
     required this.age,
     required this.program,
@@ -41,7 +43,8 @@ class Student {
       classesAttended: json['classes_attended'] ?? 0,
       totalClasses: json['total_classes'] ?? 0,
       progressScore: 0,
-      checkInTime: '',
+      checkInTime: json['check_in_time'] ?? '',
+      loginType: json['login_type'] ?? '',
       alerts: [],
       age: json['age'] ?? 0,
       program: '',
@@ -59,7 +62,8 @@ final sampleStudent = Student(
   classesAttended: 7,
   totalClasses: 9,
   progressScore: 82,
-  checkInTime: '4:58 PM (FaceScan)',
+  checkInTime: '4:58 PM',
+  loginType: 'face_scan',
   alerts: ['Belt exam scheduled for September 20'],
   age: 15,
   program: 'Junior Sparring',
