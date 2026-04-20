@@ -4,18 +4,19 @@ import '../../../theme/app_theme.dart';
 class _NavItem {
   final IconData icon;
   final String label;
-
   const _NavItem({required this.icon, required this.label});
 }
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final int unreadCount;
 
   const AppBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.unreadCount = 0,
   });
 
   static const List<_NavItem> _items = [
@@ -42,7 +43,8 @@ class AppBottomNavBar extends StatelessWidget {
               return _NavBarItem(
                 item: _items[i],
                 isSelected: i == currentIndex,
-                onTap: () => onTap(i), // simple lang, HomeScreen na bahala
+                onTap: () => onTap(i),
+                badge: i == 3 ? unreadCount : 0, // index 3 = Announcement
               );
             }),
           ),
@@ -56,11 +58,13 @@ class _NavBarItem extends StatelessWidget {
   final _NavItem item;
   final bool isSelected;
   final VoidCallback onTap;
+  final int badge;
 
   const _NavBarItem({
     required this.item,
     required this.isSelected,
     required this.onTap,
+    this.badge = 0,
   });
 
   @override
@@ -73,7 +77,34 @@ class _NavBarItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(item.icon, size: 24, color: color),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(item.icon, size: 24, color: color),
+              if (badge > 0)
+                Positioned(
+                  top: -4,
+                  right: -6,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      badge > 99 ? '99+' : '$badge',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 4),
           Text(
             item.label,

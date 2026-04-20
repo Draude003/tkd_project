@@ -3,7 +3,7 @@ import 'package:tkd/features/student/account_module/screens/parent_account_scree
 import '../../../models/parent_model.dart';
 import '../main_widgets/child_card.dart';
 import '../../student/chat_module/screens/chat_screen.dart';
-import '../alert_module/screens/alert_screen.dart';
+import '../announcement_module/screens/parent_announcement_screen.dart';
 import '../childprofile_module/screens/child_profile_screen.dart';
 import '../main_widgets/parent_quick_actions.dart';
 import '../main_widgets/parent_recent_alerts.dart';
@@ -19,15 +19,32 @@ class ParentHomeScreen extends StatefulWidget {
 
 class _ParentHomeScreenState extends State<ParentHomeScreen> {
   int _currentIndex = 0;
+  int _unreadCount = 0;
+
+   @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount(); // <-- dagdag
+  }
+
+  Future<void> _loadUnreadCount() async {
+    final count = await ApiService.getUnreadAnnouncementCount();
+    if (mounted) setState(() => _unreadCount = count);
+  }
 
   void _onNavTap(int index) {
     setState(() => _currentIndex = index);
+    if (index == 2) {
+      ApiService.markAnnouncementsRead().then((_) {
+        setState(() => _unreadCount = 0);
+      });
+    }
   }
 
   static const List<String> _titles = [
     'Parent Portal',
     'Messages',
-    'Alerts',
+    'Announcements',
     'Account',
   ];
 
@@ -52,13 +69,14 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
         children: const [
           _HomeBody(),
           ChatScreen(),
-          AlertScreen(),
+          ParentAnnouncementScreen(),
           ParentAccountScreen(),
         ],
       ),
       bottomNavigationBar: ParentBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
+        unreadCount: _unreadCount,
       ),
     );
   }

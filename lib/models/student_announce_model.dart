@@ -3,18 +3,24 @@ class Announcement {
   final String title;
   final String description;
   final String date;
+  final String sentAt; 
   final String location;
+  final String eventDate;
   final String eventTime;
   final String fee;
+  final bool isRead;
 
   const Announcement({
     required this.id,
     required this.title,
     required this.description,
     required this.date,
+    this.eventDate = '',
+    this.sentAt = '',
     this.location = '',
     this.eventTime = '',
     this.fee = '',
+    this.isRead = false, 
   });
 
   factory Announcement.fromJson(Map<String, dynamic> json) {
@@ -22,25 +28,13 @@ class Announcement {
       id: json['id'].toString(),
       title: json['title'] ?? '',
       description: json['message'] ?? '',
-      date: json['publish_date'] != null
-          ? _formatDate(json['publish_date'])
-          : '',
+      date: json['publish_date'] ?? '',
+      sentAt: json['sent_at'] ?? '',    
       location: json['location'] ?? '',
+      eventDate: json['event_date'] ?? '',
       eventTime: json['event_time'] ?? '',
       fee: json['fee'] ?? '',
+      isRead: json['is_read'] ?? false,
     );
-  }
-
-  static String _formatDate(String raw) {
-    try {
-      final dt = DateTime.parse(raw);
-      const months = [
-        'Jan','Feb','Mar','Apr','May','Jun',
-        'Jul','Aug','Sept','Oct','Nov','Dec'
-      ];
-      return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
-    } catch (_) {
-      return raw;
-    }
   }
 }
