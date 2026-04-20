@@ -192,4 +192,73 @@ static Future<Map<String, dynamic>?> getChildProfile(int childId) async {
   }
 }
 
+static Future<List<dynamic>> getStudentsList() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/students-list'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
+
+static Future<List<dynamic>> getParentsList() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/parents-list'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
+
+static Future<int> getUnreadAnnouncementCount() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/announcements/unread-count'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['unread_count'] ?? 0;
+    return 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+static Future<void> markAnnouncementsRead() async {
+  try {
+    await http.post(
+      Uri.parse('$baseUrl/announcements/mark-read'),
+      headers: await _headers,
+    );
+  } catch (e) {}
+}
+
+static Future<void> markAnnouncementRead(String id) async {
+  try {
+    await http.post(
+      Uri.parse('$baseUrl/announcements/$id/mark-read'),
+      headers: await _headers,
+    );
+  } catch (e) {}
+}
+
+static Future<void> dismissAnnouncement(String id) async {
+  try {
+    await http.post(
+      Uri.parse('$baseUrl/announcements/$id/dismiss'),
+      headers: await _headers,
+    );
+  } catch (e) {}
+}
+
 }

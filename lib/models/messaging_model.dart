@@ -1,4 +1,11 @@
-enum MessageRecipientType { all, parents, student, classGroup }
+enum MessageRecipientType {
+  all,
+  parents,
+  student,
+  classGroup,
+  specificStudents,
+  specificParents,
+}
 
 class MessageRecipientModel {
   final MessageRecipientType type;
@@ -22,7 +29,11 @@ class MessageRecipientModel {
       case MessageRecipientType.student:
         return '🧑‍🎓';
       case MessageRecipientType.classGroup:
-        return '💬';
+        return '🏫';
+      case MessageRecipientType.specificStudents:
+        return '👤';
+      case MessageRecipientType.specificParents:
+        return '👪';
     }
   }
 
@@ -36,8 +47,17 @@ class MessageRecipientModel {
         return 'students';
       case MessageRecipientType.classGroup:
         return 'class';
+      case MessageRecipientType.specificStudents:
+        return 'specific_students';
+      case MessageRecipientType.specificParents:
+        return 'specific_parents';
     }
   }
+
+  bool get requiresSelection =>
+      type == MessageRecipientType.specificStudents ||
+      type == MessageRecipientType.specificParents ||
+      type == MessageRecipientType.classGroup;
 }
 
 class SentMessageModel {
@@ -71,12 +91,27 @@ class SentMessageModel {
     try {
       final dt = DateTime.parse(raw);
       const months = [
-        'Jan','Feb','Mar','Apr','May','Jun',
-        'Jul','Aug','Sept','Oct','Nov','Dec'
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
       ];
       return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
     } catch (_) {
       return raw;
     }
   }
+}
+
+// Para sa list ng students/parents/classes na pipiliin
+class SelectablePersonModel {
+  final int id;
+  final String name;
+  final String subtitle;
+  bool isSelected;
+
+  SelectablePersonModel({
+    required this.id,
+    required this.name,
+    required this.subtitle,
+    this.isSelected = false,
+  });
 }

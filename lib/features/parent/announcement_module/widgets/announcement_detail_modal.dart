@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../models/student_announce_model.dart';
+import '../../../../models/parent_announce_model.dart';
 
 class AnnouncementDetailModal extends StatelessWidget {
   final Announcement announcement;
@@ -55,7 +55,7 @@ class AnnouncementDetailModal extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 5),
+                const SizedBox(height: 10),
                 Text(
                   announcement.title,
                   style: const TextStyle(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../models/student_announce_model.dart'; 
+import '../../../../models/parent_announce_model.dart'; 
 import 'announcement_detail_modal.dart';
 import 'package:tkd/services/api_service.dart';
 

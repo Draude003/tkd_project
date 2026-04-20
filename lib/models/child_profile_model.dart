@@ -16,7 +16,7 @@ class ChildProfileModel {
   final String nextBeltTest;
   final int classesPerWeek;
   final double attendancePercentage;
-  final int monthsTraining;
+  final String monthsTraining;
   final int awardsCount;
   final List<ChildProfileSkill> skills;
 
@@ -48,7 +48,7 @@ class ChildProfileModel {
       nextBeltTest: json['next_belt_test'] ?? 'TBA',
       classesPerWeek: json['classes_per_week'] ?? 0,
       attendancePercentage: (json['attendance_percentage'] ?? 0).toDouble(),
-      monthsTraining: json['months_training'] ?? 0,
+      monthsTraining: (json['months_training'] as num?)?.toInt().toString() ?? '0',
       awardsCount: json['awards_count'] ?? 0,
       skills: [],
     );

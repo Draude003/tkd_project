@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/student_model.dart';
-import '../main_widgets/bottom_nav_bar.dart';
+import '../main_widgets/student_bottom_nav_bar.dart';
 import '../main_widgets/profile_card.dart';
 import '../main_widgets/student_quick_actions_card.dart';
 import '../main_widgets/recent_alerts_card.dart';
@@ -8,7 +8,7 @@ import '../main_widgets/status_today_card.dart';
 import '../main_widgets/this_month_card.dart';
 import '../progress_module/screens/progress_screen.dart';
 import '../chat_module/screens/chat_screen.dart';
-import '../announcement_module/screens/announcement_screen.dart';
+import '../announcement_module/screens/student_announcement_screen.dart';
 import '../account_module/screens/student_account_screen.dart';
 import 'package:tkd/services/api_service.dart';
 
@@ -21,9 +21,26 @@ class StudentHomeScreen extends StatefulWidget {
 
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
   int _currentIndex = 0;
+  int _unreadCount = 0;
+
+   @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+  }
 
   void _onNavTap(int index) {
     setState(() => _currentIndex = index);
+    if (index == 3) {
+      ApiService.markAnnouncementsRead().then((_) {
+        setState(() => _unreadCount = 0);
+      });
+    }
+  }
+
+    Future<void> _loadUnreadCount() async {
+    final count = await ApiService.getUnreadAnnouncementCount();
+    if (mounted) setState(() => _unreadCount = count);
   }
 
   //for routing
@@ -31,7 +48,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     _HomeBody(),
     ProgressScreen(),
     ChatScreen(),
-    AnnouncementScreen(),
+    StudentAnnouncementScreen(),
     AccountScreen(),
   ];
   
@@ -67,6 +84,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
+        unreadCount: _unreadCount,
       ),
     );
   }
@@ -89,6 +107,7 @@ class _HomeBodyState extends State<_HomeBody> {
     super.initState();
     _loadProfile();
   }
+
 
   Future<void> _loadProfile() async {
     final data = await ApiService.getStudentProfile();
