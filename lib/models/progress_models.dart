@@ -1,12 +1,3 @@
-import 'package:flutter/material.dart';
-
-class NavItem {
-  final IconData icon;
-  final String label;
-
-  const NavItem({required this.icon, required this.label});
-}
-
 class SkillProgress {
   final String name;
   final double percentage;
@@ -16,13 +7,11 @@ class SkillProgress {
 
 class CoachNote {
   final String coachName;
-  final String icon;
   final String updatedLabel;
   final String note;
 
   const CoachNote({
     required this.coachName,
-    required this.icon,
     required this.updatedLabel,
     required this.note,
   });

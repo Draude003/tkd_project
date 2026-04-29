@@ -1,111 +1,173 @@
-enum PaymentStatus { paid, pending, overdue }
+enum PaymentStatus { paid, pending, overdue, pendingVerification, partial }
 
 class InvoiceModel {
   final String id;
+  final String invoiceNo;
   final String month;
   final String year;
   final double amount;
   final String date;
+  final String dueDate;
   final PaymentStatus status;
+  final String? paymentProof;
 
   const InvoiceModel({
     required this.id,
+    required this.invoiceNo,
     required this.month,
     required this.year,
     required this.amount,
     required this.date,
+    required this.dueDate,
     required this.status,
+    this.paymentProof,
   });
+
+  factory InvoiceModel.fromJson(Map<String, dynamic> json) {
+    PaymentStatus status;
+    switch (json['status']) {
+      case 'paid':
+        status = PaymentStatus.paid;
+        break;
+      case 'overdue':
+        status = PaymentStatus.overdue;
+        break;
+      case 'pending_verification':
+        status = PaymentStatus.pendingVerification;
+        break;
+      case 'partial':
+        status = PaymentStatus.partial;
+        break;
+      default:
+        status = PaymentStatus.pending;
+    }
+
+    return InvoiceModel(
+      id: json['id'].toString(),
+      invoiceNo: json['invoice_no'] ?? '',
+      month: json['month'] ?? '',
+      year: json['year'] ?? '',
+      amount: double.parse(json['amount'].toString()),
+      date: json['date'] ?? '',
+      dueDate: json['due_date'] ?? '',
+      status: status,
+      paymentProof: json['payment_proof'],
+    );
+  }
 }
 
 class PaymentHistoryModel {
+  final String id;
   final String label;
-  final String paidBy;
+  final String paymentMethod;
   final String date;
   final double amount;
 
   const PaymentHistoryModel({
+    required this.id,
     required this.label,
-    required this.paidBy,
+    required this.paymentMethod,
     required this.date,
     required this.amount,
   });
+
+  factory PaymentHistoryModel.fromJson(Map<String, dynamic> json) {
+    return PaymentHistoryModel(
+      id: json['id'].toString(),
+      label: json['label'] ?? '',
+      paymentMethod: json['payment_method'] ?? '',
+      date: json['date'] ?? '',
+      amount: double.parse(json['amount'].toString()),
+    );
+  }
+}
+
+class PlanModel {
+  final String name;
+  final double amount;
+  final String description;
+  final String billingCycle;
+  final String nextDue;
+
+  const PlanModel({
+    required this.name,
+    required this.amount,
+    required this.description,
+    required this.billingCycle,
+    required this.nextDue,
+  });
+
+  factory PlanModel.fromJson(Map<String, dynamic> json) {
+    return PlanModel(
+      name: json['name'] ?? '',
+      amount: double.parse(json['amount'].toString()),
+      description: json['description'] ?? '',
+      billingCycle: json['billing_cycle'] ?? 'Monthly',
+      nextDue: json['next_due'] ?? 'N/A',
+    );
+  }
+}
+
+class PendingInvoiceModel {
+  final String id;
+  final String invoiceNo;
+  final double amount;
+  final String dueDate;
+  final String status;
+
+  const PendingInvoiceModel({
+    required this.id,
+    required this.invoiceNo,
+    required this.amount,
+    required this.dueDate,
+    required this.status,
+  });
+
+  factory PendingInvoiceModel.fromJson(Map<String, dynamic> json) {
+    return PendingInvoiceModel(
+      id: json['id'].toString(),
+      invoiceNo: json['invoice_no'] ?? '',
+      amount: double.parse(json['amount'].toString()),
+      dueDate: json['due_date'] ?? '',
+      status: json['status'] ?? 'pending',
+    );
+  }
 }
 
 class BillingModel {
-  final double planAmount;
-  final String planDescription;
-  final String billingCycle;
-  final String accountStatus;
-  final String nextDue;
-  final double currentBalance;
+  final PlanModel? plan;
+  final double balance;
   final List<InvoiceModel> invoices;
   final List<PaymentHistoryModel> paymentHistory;
+  final PendingInvoiceModel? pendingInvoice;
 
   const BillingModel({
-    required this.planAmount,
-    required this.planDescription,
-    required this.billingCycle,
-    required this.accountStatus,
-    required this.nextDue,
-    required this.currentBalance,
+    this.plan,
+    required this.balance,
     required this.invoices,
     required this.paymentHistory,
+    this.pendingInvoice,
   });
-}
 
-// ── Sample Data ───────────────────────────────────────────────────────────────
-final sampleBilling = BillingModel(
-  planAmount: 2500,
-  planDescription: '2x per week',
-  billingCycle: 'Monthly Billing',
-  accountStatus: 'Active',
-  nextDue: 'Sept 30',
-  currentBalance: 0,
-  invoices: const [
-    InvoiceModel(
-      id: 'INV-001',
-      month: 'SEP',
-      year: '2024',
-      amount: 2500,
-      date: 'September 1, 2024',
-      status: PaymentStatus.paid,
-    ),
-    InvoiceModel(
-      id: 'INV-002',
-      month: 'AUG',
-      year: '2024',
-      amount: 2500,
-      date: 'August 1, 2024',
-      status: PaymentStatus.paid,
-    ),
-    InvoiceModel(
-      id: 'INV-003',
-      month: 'JUL',
-      year: '2024',
-      amount: 2500,
-      date: 'July 1, 2024',
-      status: PaymentStatus.paid,
-    ),
-  ],
-  paymentHistory: const [
-    PaymentHistoryModel(
-      label: 'September Payment',
-      paidBy: 'Parent Account',
-      date: 'Sept 1, 2024',
-      amount: 2500,
-    ),
-    PaymentHistoryModel(
-      label: 'August Payment',
-      paidBy: 'Parent Account',
-      date: 'Aug 1, 2024',
-      amount: 2500,
-    ),
-    PaymentHistoryModel(
-      label: 'July Payment',
-      paidBy: 'Parent Account',
-      date: 'Jul 1, 2024',
-      amount: 2500,
-    ),
-  ],
-);
+  factory BillingModel.fromJson(Map<String, dynamic> json) {
+    return BillingModel(
+      plan: json['plan'] != null
+          ? PlanModel.fromJson(Map<String, dynamic>.from(json['plan']))
+          : null,
+      balance: double.parse(json['balance'].toString()),
+      invoices: (json['invoices'] as List)
+          .map((i) => InvoiceModel.fromJson(Map<String, dynamic>.from(i)))
+          .toList(),
+      paymentHistory: (json['payment_history'] as List)
+          .map(
+            (p) => PaymentHistoryModel.fromJson(Map<String, dynamic>.from(p)),
+          )
+          .toList(),
+      pendingInvoice: json['pending_invoice'] != null
+          ? PendingInvoiceModel.fromJson(
+              Map<String, dynamic>.from(json['pending_invoice']),
+            )
+          : null,
+    );
+  }
+}
