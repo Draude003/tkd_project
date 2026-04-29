@@ -261,4 +261,169 @@ static Future<void> dismissAnnouncement(String id) async {
   } catch (e) {}
 }
 
+static Future<Map<String, dynamic>?> getStudentBilling() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/student/billing'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<Map<String, dynamic>?> getParentBilling(String studentId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/parent/billing/$studentId'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<bool> uploadPaymentProof(String invoiceId, String imagePath) async {
+  try {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/invoices/$invoiceId/upload-proof'),
+    );
+    final headers = await _headers;
+    request.headers.addAll(headers);
+    request.files.add(await http.MultipartFile.fromPath('proof', imagePath));
+    final response = await request.send();
+    final body = await response.stream.bytesToString();
+    final data = jsonDecode(body);
+    return data['success'] == true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ─── EVALUATION ───────────────────────────────────────────
+
+static Future<List<dynamic>> getEvaluationStudents() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/evaluation/students'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['students'];
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
+
+static Future<List<dynamic>> getSkillsByBelt(String beltLevel) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/evaluation/skills/$beltLevel'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['skills'];
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
+
+static Future<bool> saveEvaluation(Map<String, dynamic> payload) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/instructor/evaluation/save'),
+      headers: await _headers,
+      body: jsonEncode(payload),
+    );
+    print('SAVE EVAL STATUS: ${response.statusCode}');
+    print('SAVE EVAL BODY: ${response.body}');
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  } catch (e) {
+    print('SAVE EVAL ERROR: $e');
+    return false;
+  }
+}
+
+static Future<List<dynamic>> getEvaluationHistory(int studentId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/evaluation/history/$studentId'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['evaluations'];
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
+
+static Future<Map<String, dynamic>?> getStudentProgress() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/student/progress'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<Map<String, dynamic>?> getLatestEvaluation(int studentId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/evaluation/latest/$studentId'),
+      headers: await _headers,
+    );
+    print('LATEST EVAL STATUS: ${response.statusCode}');
+    print('LATEST EVAL BODY: ${response.body}');
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['evaluation'];
+    return null;
+  } catch (e) {
+    print('LATEST EVAL ERROR: $e');
+    return null;
+  }
+}
+
+static Future<List<dynamic>> getBeltPromotionCandidates() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/belt-promotion/candidates'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['candidates'];
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
+
+static Future<bool> approvePromotion(List<int> studentIds) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/instructor/belt-promotion/approve'),
+      headers: await _headers,
+      body: jsonEncode({'student_ids': studentIds}),
+    );
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  } catch (e) {
+    return false;
+  }
+}
 }

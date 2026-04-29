@@ -1,143 +1,57 @@
-// screens/belt_promotion_screen.dart
-
 import 'package:flutter/material.dart';
-import '/../models/belt_promotion_model.dart';
-import '../widgets/candidate_card_widget.dart';
-import '../widgets/exam_date_picker_widget.dart';
-import '../widgets/promotion_stats_widget.dart';
-import '../widgets/promotion_action_buttons_widget.dart';
-import '../widgets/division_selector_widget.dart';
-import '../widgets/belt_selector_widget.dart';
-import '../widgets/student_picker_sheet.dart';
+import '../../../../services/api_service.dart';
 
 class BeltPromotionScreen extends StatefulWidget {
-  final Division? initialDivision;
-  final BeltLevel? initialBelt;
-
-  const BeltPromotionScreen({
-    super.key,
-    this.initialDivision,
-    this.initialBelt,
-  });
+  const BeltPromotionScreen({super.key});
 
   @override
   State<BeltPromotionScreen> createState() => _BeltPromotionScreenState();
 }
 
 class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
-  late Division _selectedDivision;
-  late BeltLevel _promotingTo;
-  DateTime? _examDate;
-  List<BeltPromotionCandidate> _candidates = [];
+  List<dynamic> _candidates = [];
+  List<int> _selectedIds = [];
+  bool _loading = true;
+  bool _approving = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedDivision = widget.initialDivision ?? Division.teensIntermediate;
-    _promotingTo = widget.initialBelt ?? BeltLevel.yellow;
+    _loadCandidates();
   }
 
-  // ── Candidate helpers ──────────────────────────────────────────────────────
-  void _toggleCandidate(String id, bool? value) {
+  Future<void> _loadCandidates() async {
+    final candidates = await ApiService.getBeltPromotionCandidates();
     setState(() {
-      _candidates = _candidates.map((c) {
-        if (c.id == id) return c.copyWith(isSelected: value ?? false);
-        return c;
-      }).toList();
+      _candidates = candidates;
+      _loading = false;
     });
   }
 
-  void _removeCandidate(String id) {
-    setState(() => _candidates.removeWhere((c) => c.id == id));
-  }
-
-  void _onDivisionChanged(Division div) {
+  void _toggleSelect(int id) {
     setState(() {
-      _selectedDivision = div;
-      _candidates = [];
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
     });
   }
 
-  void _onBeltChanged(BeltLevel belt) {
-    setState(() {
-      _promotingTo = belt;
-      _candidates = _candidates
-          .map((c) => c.copyWith(isSelected: false))
-          .toList();
-    });
-  }
+  Future<void> _approvePromotion() async {
+    if (_selectedIds.isEmpty) return;
 
-  void _openStudentPicker() {
-    showStudentPickerSheet(
-      context: context,
-      division: _selectedDivision,
-      alreadyAddedIds: _candidates.map((c) => c.id).toList(),
-      onConfirm: (picked) {
-        setState(() {
-          _candidates = [..._candidates, ...picked.map((s) => s.toCandidate())];
-        });
-      },
-    );
-  }
-
-  // ── Date picker ────────────────────────────────────────────────────────────
-  Future<void> _pickExamDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _examDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(primary: Color(0xFF1A1A2E)),
-        ),
-        child: child!,
-      ),
-    );
-    if (picked != null) setState(() => _examDate = picked);
-  }
-
-  // ── Actions ────────────────────────────────────────────────────────────────
-  void _autoSelect() {
-    if (_candidates.isEmpty) {
-      _openStudentPicker();
-      return;
-    }
-    setState(() {
-      _candidates = _candidates.map((c) {
-        final ok =
-            c.attendanceCount >= 30 &&
-            c.skillScore >= 4.0 &&
-            c.instructorRating >= 4.0;
-        return c.copyWith(isSelected: ok);
-      }).toList();
-    });
-    final count = _candidates.where((c) => c.isSelected).length;
-    _showSnack('$count candidate(s) auto-selected', const Color(0xFF1A1A2E));
-  }
-
-  void _printEvaluation() => _showSnack(
-    'Preparing evaluation sheet for print...',
-    const Color(0xFF1A1A2E),
-  );
-
-  void _approvePromotion() {
-    final selected = _candidates.where((c) => c.isSelected).toList();
-    showDialog(
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Row(
           children: [
-            Icon(Icons.verified_rounded, color: Color(0xFF1A1A2E)),
+            Icon(Icons.military_tech_rounded, color: Color(0xFF1C1C1E)),
             SizedBox(width: 8),
             Text(
               'Confirm Promotion',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1A1A2E),
-              ),
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -145,498 +59,495 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                _InfoChip(
-                  label: _selectedDivision.label,
-                  icon: _selectedDivision.icon,
-                ),
-                const SizedBox(width: 8),
-                _BeltChip(belt: _promotingTo),
-              ],
-            ),
-            const SizedBox(height: 14),
             Text(
-              'Approve promotion for ${selected.length} candidate(s)?',
+              'Promote ${_selectedIds.length} student(s) to their next belt level?',
               style: const TextStyle(fontSize: 14),
             ),
-            const SizedBox(height: 8),
-            ...selected.map(
-              (c) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Icon(Icons.circle, size: 6, color: Colors.grey.shade400),
-                    const SizedBox(width: 8),
-                    Text(c.name, style: const TextStyle(fontSize: 13)),
-                  ],
-                ),
-              ),
-            ),
+            const SizedBox(height: 12),
+            ..._candidates
+                .where((c) => _selectedIds.contains(c['id']))
+                .map((c) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: _beltColor(c['next_belt_color']),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${c['first_name']} ${c['last_name']} → ${c['next_belt']}',
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    )),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1A1A2E),
+              backgroundColor: const Color(0xFF1C1C1E),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {
-              Navigator.pop(context);
-              _showSnack(
-                '${selected.length} candidate(s) promoted to ${_promotingTo.label}! 🥋',
-                const Color(0xFF2ECC71),
-              );
-            },
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Approve'),
           ),
         ],
       ),
     );
-  }
 
-  void _showSnack(String msg, Color color) {
+    if (confirm != true) return;
+
+    setState(() => _approving = true);
+    final success = await ApiService.approvePromotion(_selectedIds);
+    setState(() => _approving = false);
+
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg),
-        backgroundColor: color,
+        content: Text(success
+            ? '${_selectedIds.length} student(s) promoted successfully!'
+            : 'Failed to approve promotion.'),
+        backgroundColor: success ? const Color(0xFF22C55E) : Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
+    );
+
+    if (success) {
+      setState(() => _selectedIds = []);
+      _loadCandidates();
+    }
+  }
+
+  Color _beltColor(String? hex) {
+    if (hex == null) return Colors.grey;
+    try {
+      return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
+    } catch (_) {
+      return Colors.grey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1C1C1E),
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          'Belt Promotion',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+        ),
+        elevation: 0,
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadCandidates,
+              child: _candidates.isEmpty
+                  ? _buildEmptyState()
+                  : Column(
+                      children: [
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.all(16),
+                            children: [
+                              _buildHeader(),
+                              const SizedBox(height: 16),
+                              ..._candidates
+                                  .map((c) => _buildCandidateCard(c)),
+                            ],
+                          ),
+                        ),
+                        if (_selectedIds.isNotEmpty) _buildApproveBar(),
+                      ],
+                    ),
+            ),
     );
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
-  @override
-  Widget build(BuildContext context) {
-    final hasSelected = _candidates.any((c) => c.isSelected);
-    final readyCount = _candidates
-        .where((c) => c.status == PromotionStatus.ready)
-        .length;
-    final needsWork = _candidates
-        .where((c) => c.status == PromotionStatus.needsWork)
-        .length;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Belt Promotion',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: Colors.white,
-          ),
-        ),
+  // ── Header ─────────────────────────────────────────────
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.circular(16),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header card ──────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color.fromARGB(255, 0, 0, 0),
-                    Color.fromARGB(255, 0, 0, 0),
-                  ],
-
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.military_tech_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _selectedDivision.label,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Promoting to ${_promotingTo.label}',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _promotingTo.color.withOpacity(0.85),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${_candidates.length} Students',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white12,
+              borderRadius: BorderRadius.circular(12),
             ),
-
-            const SizedBox(height: 16),
-
-            // ── Stats ────────────────────────────────────────────
-            PromotionStatsWidget(
-              totalCandidates: _candidates.length,
-              readyCount: readyCount,
-              needsWorkCount: needsWork,
+            child: const Icon(
+              Icons.military_tech_rounded,
+              color: Colors.white,
+              size: 24,
             ),
-
-            const SizedBox(height: 20),
-
-            // ── Division selector ────────────────────────────────
-            DivisionSelectorWidget(
-              selected: _selectedDivision,
-              onChanged: _onDivisionChanged,
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── Belt selector ────────────────────────────────────
-            BeltSelectorWidget(
-              selected: _promotingTo,
-              onChanged: _onBeltChanged,
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Candidates header ────────────────────────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Promotion Candidates',
                   style: TextStyle(
+                    color: Colors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A2E),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                Row(
-                  children: [
-                    // Add students button
-                    GestureDetector(
-                      onTap: _openStudentPicker,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 0, 0, 0),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.person_add_rounded,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                            SizedBox(width: 5),
-                            Text(
-                              'Add',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Auto-select button
-                    if (_candidates.isNotEmpty)
-                      TextButton.icon(
-                        onPressed: _autoSelect,
-                        icon: const Icon(Icons.auto_awesome_rounded, size: 14),
-                        label: const Text('Auto-select'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFF1A1A2E),
-                          padding: EdgeInsets.zero,
-                          textStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                  ],
+                const SizedBox(height: 2),
+                Text(
+                  '${_candidates.length} student(s) ready for promotion',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),
-
-            const SizedBox(height: 6),
-
-            // ── Criteria hint ────────────────────────────────────
-            if (_candidates.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.info_outline_rounded,
-                      size: 14,
-                      color: Color(0xFF1A1A2E),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Based on attendance · skill scores · instructor ratings',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: const Color.fromARGB(
-                          255,
-                          0,
-                          0,
-                          0,
-                        ).withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            const SizedBox(height: 6),
-
-            // ── Candidate list or empty state ─────────────────────
-            if (_candidates.isEmpty)
-              _EmptyCandidates(onAdd: _openStudentPicker)
-            else
-              ..._candidates.map(
-                (c) => Dismissible(
-                  key: Key(c.id),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade400,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(
-                      Icons.delete_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                  onDismissed: (_) => _removeCandidate(c.id),
-                  child: CandidateCardWidget(
-                    candidate: c,
-                    onCheckChanged: (val) => _toggleCandidate(c.id, val),
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 20),
-
-            // ── Exam Date ────────────────────────────────────────
-            const Text(
-              'Exam Date',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1A1A2E),
-              ),
-            ),
-            const SizedBox(height: 8),
-            ExamDatePickerWidget(selectedDate: _examDate, onTap: _pickExamDate),
-
-            const SizedBox(height: 20),
-            Divider(color: Colors.grey.shade200, thickness: 1),
-            const SizedBox(height: 12),
-
-            // ── Action buttons ───────────────────────────────────
-            PromotionActionButtonsWidget(
-              onGenerateList: _autoSelect,
-              onPrintEvaluation: _printEvaluation,
-              onApprovePromotion: _approvePromotion,
-              hasSelectedCandidates: hasSelected,
-            ),
-
-            const SizedBox(height: 30),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Empty state when no candidates added yet ──────────────────────────────────
-class _EmptyCandidates extends StatelessWidget {
-  final VoidCallback onAdd;
-  const _EmptyCandidates({required this.onAdd});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onAdd,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade200,
-            style: BorderStyle.solid,
           ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.06),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.person_add_rounded,
-                color: Color.fromARGB(255, 0, 0, 0),
-                size: 28,
-              ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF22C55E).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'No candidates yet',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color.fromARGB(255, 0, 0, 0),
+            child: Text(
+              '${_candidates.length} Ready',
+              style: const TextStyle(
+                color: Color(0xFF22C55E),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Tap to add students from this division',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Dialog helper chips ───────────────────────────────────────────────────────
-class _InfoChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  const _InfoChip({required this.label, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: const Color(0xFF1A1A2E)),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
           ),
         ],
       ),
     );
   }
-}
 
-class _BeltChip extends StatelessWidget {
-  final BeltLevel belt;
-  const _BeltChip({required this.belt});
+  // ── Candidate Card ─────────────────────────────────────
+  Widget _buildCandidateCard(Map<String, dynamic> c) {
+    final isSelected = _selectedIds.contains(c['id'] as int);
+    final currentBeltColor = _beltColor(c['belt_color']);
+    final nextBeltColor = _beltColor(c['next_belt_color']);
+    final avgScore = ((c['technique_score'] as int) +
+            (c['discipline_score'] as int) +
+            (c['fitness_score'] as int) +
+            (c['sparring_score'] as int)) /
+        4;
 
-  @override
-  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _toggleSelect(c['id'] as int),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF1C1C1E).withOpacity(0.05)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF1C1C1E)
+                : Colors.grey.shade200,
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Student info row ──
+            Row(
+              children: [
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${c['first_name']} ${c['last_name']}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        c['student_code'] ?? '',
+                        style: const TextStyle(
+                            fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                // Checkbox
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF1C1C1E)
+                        : Colors.transparent,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF1C1C1E)
+                          : Colors.grey.shade400,
+                      width: 2,
+                    ),
+                  ),
+                  child: isSelected
+                      ? const Icon(Icons.check, color: Colors.white, size: 14)
+                      : null,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // ── Belt promotion arrow ──
+            Row(
+              children: [
+                _beltBadge(c['current_belt'], currentBeltColor),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(Icons.arrow_forward_rounded,
+                      size: 16, color: Colors.grey),
+                ),
+                _beltBadge(c['next_belt'], nextBeltColor),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF22C55E).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.check_circle,
+                          size: 12, color: Color(0xFF22C55E)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Ready',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF22C55E),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+            Divider(height: 1, color: Colors.grey.shade100),
+            const SizedBox(height: 12),
+
+            // ── Scores row ──
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _scoreChip('Tech', c['technique_score'] as int),
+                _scoreChip('Disc', c['discipline_score'] as int),
+                _scoreChip('Fit', c['fitness_score'] as int),
+                _scoreChip('Spar', c['sparring_score'] as int),
+                _scoreChip('Skills', c['skill_completion'] as int,
+                    isPercent: true),
+              ],
+            ),
+
+            if (c['notes'] != null &&
+                c['notes'].toString().isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.notes_rounded,
+                        size: 14, color: Colors.blue),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        c['notes'],
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.black87),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _beltBadge(String beltName, Color color) {
+    final isDark = color != Colors.white;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: belt.color.withOpacity(0.12),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.4)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 8,
             height: 8,
             decoration: BoxDecoration(
+              color: color,
               shape: BoxShape.circle,
-              color: belt.color,
+              border: Border.all(color: Colors.grey.shade300),
             ),
           ),
           const SizedBox(width: 5),
           Text(
-            belt.label,
+            beltName,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: belt == BeltLevel.white
-                  ? Colors.grey.shade700
-                  : belt.color,
+              color: isDark ? color : Colors.grey.shade700,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _scoreChip(String label, int value, {bool isPercent = false}) {
+    return Column(
+      children: [
+        Text(
+          isPercent ? '$value%' : '$value/10',
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1C1C1E),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 10, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  // ── Approve Bar ────────────────────────────────────────
+  Widget _buildApproveBar() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: ElevatedButton.icon(
+          onPressed: _approving ? null : _approvePromotion,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1C1C1E),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          icon: _approving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2),
+                )
+              : const Icon(Icons.military_tech_rounded, size: 20),
+          label: Text(
+            _approving
+                ? 'Approving...'
+                : 'Approve ${_selectedIds.length} Student(s)',
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Empty State ────────────────────────────────────────
+  Widget _buildEmptyState() {
+    return ListView(
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.military_tech_rounded,
+                  size: 64, color: Colors.grey.shade300),
+              const SizedBox(height: 16),
+              const Text(
+                'No Promotion Candidates',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1C1C1E),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Students will appear here when\nan instructor marks them as Belt Ready.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

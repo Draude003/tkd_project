@@ -26,8 +26,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-    });
+    _scrollController.addListener(() {});
   }
 
   @override
@@ -389,7 +388,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       : _selectedTab == 1
                       ? const AttendanceTab(key: ValueKey('attendance'))
                       : _selectedTab == 2
-                      ? const BillingTab(key: ValueKey('billing'))
+                      ? const SingleChildScrollView(
+                          key: ValueKey('billing'),
+                          child: BillingTab(),
+                        )
                       : const CompetitionTab(key: ValueKey('competition')),
                 ),
                 const SizedBox(height: 32),

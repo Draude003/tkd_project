@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tkd/features/instructor/main_screens/quick_start_class_screen.dart';
+import '../evaluation_module/screens/student_selection_screen.dart';
 import '../../../models/instructor_model.dart';
-import '../competition_module/screens/compitition_tracking_screen.dart';
 import '../belt_promotion/screens/belt_promotion_screen.dart';
 
 class _QuickAction {
@@ -9,7 +9,11 @@ class _QuickAction {
   final String label;
   final void Function(BuildContext) onTap;
 
-  const _QuickAction({required this.icon, required this.label, required this.onTap});
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 }
 
 class InstructorQuickActionsCard extends StatefulWidget {
@@ -17,10 +21,12 @@ class InstructorQuickActionsCard extends StatefulWidget {
   const InstructorQuickActionsCard({super.key, required this.classes});
 
   @override
-  State<InstructorQuickActionsCard> createState() => _InstructorQuickActionsCardState();
+  State<InstructorQuickActionsCard> createState() =>
+      _InstructorQuickActionsCardState();
 }
 
-class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard> {
+class _InstructorQuickActionsCardState
+    extends State<InstructorQuickActionsCard> {
   InstructorClass? _activeClass;
 
   String _classStatus(String timeRange) {
@@ -30,7 +36,8 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
     final startParts = parts[0].trim().split(':');
     final endParts = parts[1].trim().split(':');
     if (startParts.length < 2 || endParts.length < 2) return 'upcoming';
-    final startMinutes = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+    final startMinutes =
+        int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
     final endMinutes = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
     final nowMinutes = now.hour * 60 + now.minute;
     if (nowMinutes < startMinutes) return 'upcoming';
@@ -144,7 +151,10 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
               }
 
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 5,
+                ),
                 child: Material(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -190,7 +200,9 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
                                 ),
                               ),
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 6),
+                                vertical: 14,
+                                horizontal: 6,
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: () {
@@ -212,9 +224,10 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
                                     ),
                                     const SizedBox(height: 3),
                                     Container(
-                                        height: 1,
-                                        width: 24,
-                                        color: Colors.white30),
+                                      height: 1,
+                                      width: 24,
+                                      color: Colors.white30,
+                                    ),
                                     const SizedBox(height: 3),
                                     Text(
                                       end,
@@ -231,7 +244,9 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
                             Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -249,7 +264,9 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
                                     const SizedBox(height: 4),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 2),
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: color.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(20),
@@ -268,8 +285,11 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
                                     const SizedBox(height: 6),
                                     Row(
                                       children: [
-                                        Icon(badgeIcon,
-                                            size: 10, color: badgeColor),
+                                        Icon(
+                                          badgeIcon,
+                                          size: 10,
+                                          color: badgeColor,
+                                        ),
                                         const SizedBox(width: 4),
                                         Text(
                                           badgeText,
@@ -317,7 +337,7 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
       ),
       _QuickAction(
         icon: Icons.people_alt_outlined,
-        label: 'Take Attendance',
+        label: 'Attendance',
         onTap: (ctx) => _activeClass != null
             ? Navigator.push(
                 ctx,
@@ -332,11 +352,10 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
       ),
       _QuickAction(
         icon: Icons.track_changes,
-        label: 'Competition Tracking',
+        label: 'Evaluation',
         onTap: (ctx) => Navigator.push(
           ctx,
-          MaterialPageRoute(
-              builder: (_) => const CompetitionTrackingScreen()),
+          MaterialPageRoute(builder: (_) => const StudentSelectionScreen()),
         ),
       ),
       _QuickAction(
@@ -362,15 +381,12 @@ class _InstructorQuickActionsCardState extends State<InstructorQuickActionsCard>
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.3,
-          children: actions.map((a) => _ActionTile(action: a)).toList(),
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: actions.map((a) => _ActionTile(action: a)).toList(),
+          ),
         ),
       ],
     );
@@ -383,40 +399,44 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: () => action.onTap(context),
-        borderRadius: BorderRadius.circular(16),
-        splashColor: Colors.grey.shade200,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
+    return GestureDetector(
+      onTap: () => action.onTap(context),
+      child: Container(
+        width: 80,
+        margin: const EdgeInsets.only(right: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 245, 246, 248),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(action.icon, size: 32, color: const Color(0xFF1C1C1E)),
-              const SizedBox(height: 8),
-              Text(
-                action.label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                  color: Color(0xFF1C1C1E),
-                ),
+              child: Icon(
+                action.icon,
+                size: 28,
+                color: Colors.black),
               ),
-            ],
-          ),
+            const SizedBox(height: 8),
+            Text(
+              action.label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.black),
+              ),
+              const SizedBox(height: 15),
+          ],
         ),
       ),
     );
