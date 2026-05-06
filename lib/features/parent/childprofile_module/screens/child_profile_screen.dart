@@ -6,7 +6,7 @@ import '../widgets/child_profile_stat_card.dart';
 import '../widgets/child_profile_skill_bar.dart';
 import '../widgets/atendance_tab.dart';
 import '../widgets/billing_tab.dart';
-import '../widgets/compitition_tab.dart';
+import '../widgets/competition_tab.dart';
 import '../widgets/certificates_tab.dart';
 import '../widgets/notes_tab.dart';
 
@@ -151,9 +151,9 @@ class _ChildProfileScreenState extends State<ChildProfileScreen>
           controller: _tabController,
           children: [
             _OverviewTab(child: s),
-            const AttendanceTab(),
+            AttendanceTab(childId: widget.childId),
             BillingTab(childId: widget.childId),
-            const ParentCompetitionTab(),
+            ParentCompetitionTab(childId: widget.childId),
             const CertificatesTab(),
             const NotesTab(),
           ],

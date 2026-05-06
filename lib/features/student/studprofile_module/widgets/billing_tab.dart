@@ -636,15 +636,15 @@ class _PayNowModal extends StatelessWidget {
                 _PaymentDetail(
                   icon: Icons.phone_android_rounded,
                   label: 'GCash',
-                  value: '09380954982',
-                  name: 'Eduardo Estareja Jr',
+                  value: '0912-345-6789',
+                  name: 'TrainNova',
                 ),
                 const SizedBox(height: 10),
                 _PaymentDetail(
                   icon: Icons.account_balance_rounded,
                   label: 'Bank Transfer',
                   value: 'BDO — 1234-5678-9012',
-                  name: 'Eduardo Estareja Jr',
+                  name: 'TrainNova',
                 ),
               ],
             ),

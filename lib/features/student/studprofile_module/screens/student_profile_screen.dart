@@ -23,6 +23,15 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     'Competition',
   ];
 
+  static const String _storageBase = 'http://192.168.68.102:8000/storage/';
+
+  String _photoUrl(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    if (raw.startsWith('http')) return raw;
+    if (raw.startsWith('/storage/')) return 'http://192.168.68.102:8000$raw';
+    return '$_storageBase$raw';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -36,9 +45,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   }
 
   Widget _sectionPadding({required Widget child}) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: child,
-  );
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: child,
+      );
 
   Widget _card({required Widget child, EdgeInsets padding = EdgeInsets.zero}) {
     return Container(
@@ -71,14 +80,14 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   }
 
   Widget _labelText(String text) => Text(
-    text,
-    style: TextStyle(
-      color: Colors.grey[500],
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.5,
-    ),
-  );
+        text,
+        style: TextStyle(
+          color: Colors.grey[500],
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+      );
 
   Widget _divider() =>
       Divider(height: 1, color: Colors.grey[100], indent: 16, endIndent: 16);
@@ -165,6 +174,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final student = widget.student;
+    final photoUrl = _photoUrl(student.photoUrl);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F7),
@@ -184,18 +194,13 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             ),
             flexibleSpace: LayoutBuilder(
               builder: (context, constraints) {
-                // 0.0 = fully collapsed, 1.0 = fully expanded
                 final percent =
                     ((constraints.maxHeight - kToolbarHeight) /
                             (220 - kToolbarHeight))
                         .clamp(0.0, 1.0);
 
-                // center ng screen minus half ng text width (approx 70)
                 final centerLeft = (constraints.maxWidth / 2) - 70;
-                // left ng collapsed — tabi ng back button
                 const collapsedLeft = 56.0;
-
-                // smooth interpolation mula collapsed → expanded
                 final leftPadding =
                     collapsedLeft + (centerLeft - collapsedLeft) * percent;
 
@@ -203,7 +208,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   centerTitle: false,
                   titlePadding: EdgeInsets.only(
                     bottom: 16,
-                    left: leftPadding, // ← smooth na gumagalaw
+                    left: leftPadding,
                   ),
                   title: Text(
                     widget.student.name,
@@ -219,23 +224,26 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // avatar fade out pag nag-scroll
                         Opacity(
-                          opacity: percent, // ← fade out ang avatar
-                          child: Container(
-                            width: 72,
-                            height: 72,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Image.asset(
-                                'assets/icons/profile.png',
-                                width: 60,
-                                height: 60,
-                              ),
-                            ),
+                          opacity: percent,
+                          child: CircleAvatar(
+                            radius: 36,
+                            backgroundColor: Colors.grey.shade700,
+                            backgroundImage: photoUrl.isNotEmpty
+                                ? NetworkImage(photoUrl)
+                                : null,
+                            child: photoUrl.isEmpty
+                                ? Text(
+                                    student.name.isNotEmpty
+                                        ? student.name[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 28,
+                                    ),
+                                  )
+                                : null,
                           ),
                         ),
                         const SizedBox(height: 60),
@@ -265,12 +273,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           divider: true,
                         ),
                         _beltRow(student.beltLevel),
-                        _infoRow(
-                          icon: 'assets/icons/app_icon.png',
-                          label: 'PROGRAM',
-                          value: student.program,
-                          divider: true,
-                        ),
                         _infoRow(
                           icon: 'assets/icons/location.png',
                           label: 'BRANCH',
@@ -386,13 +388,14 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   child: _selectedTab == 0
                       ? const OverviewTab(key: ValueKey('overview'))
                       : _selectedTab == 1
-                      ? const AttendanceTab(key: ValueKey('attendance'))
-                      : _selectedTab == 2
-                      ? const SingleChildScrollView(
-                          key: ValueKey('billing'),
-                          child: BillingTab(),
-                        )
-                      : const CompetitionTab(key: ValueKey('competition')),
+                          ? const AttendanceTab(key: ValueKey('attendance'))
+                          : _selectedTab == 2
+                              ? const SingleChildScrollView(
+                                  key: ValueKey('billing'),
+                                  child: BillingTab(),
+                                )
+                              : const CompetitionTab(
+                                  key: ValueKey('competition')),
                 ),
                 const SizedBox(height: 32),
               ],

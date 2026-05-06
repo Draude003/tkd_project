@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tkd/features/instructor/announcement_module/screens/instructor_Announce_screen.dart';
-import 'package:tkd/features/instructor/reports_module/screens/reports_screen.dart';
 import 'package:tkd/features/instructor/account_settings_module/screens/instructor_account_screen.dart';
+import 'package:tkd/features/instructor/reports_module/screens/reports_screen.dart';
 import 'package:tkd/features/instructor/main_screens/instructor_students_screen.dart';
 import '../../../models/instructor_model.dart';
 import '../main_widgets/instructor_bottom_nav_bar.dart';
@@ -21,6 +21,29 @@ class InstructorHomeScreen extends StatefulWidget {
 
 class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   int _currentIndex = 0;
+  String? _photoUrl;
+
+  static const String _storageBase = 'http://192.168.68.102:8000';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPhoto();
+  }
+
+  Future<void> _loadPhoto() async {
+    final profile = await ApiService.getInstructorProfile();
+    if (profile != null && mounted) {
+      setState(() => _photoUrl = _buildPhotoUrl(profile['photo_url']));
+    }
+  }
+
+  String? _buildPhotoUrl(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    if (raw.startsWith('http')) return raw;
+    if (raw.startsWith('/storage/')) return '$_storageBase$raw';
+    return '$_storageBase/storage/$raw';
+  }
 
   void _onNavTap(int index) {
     setState(() => _currentIndex = index);
@@ -36,7 +59,6 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   static const List<String> _titles = [
     'Instructor Dashboard',
     'Announcements',
-    'Class Management',
     'Students',
     'Reports',
   ];
@@ -52,16 +74,31 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle_rounded, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
+          GestureDetector(
+            onTap: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => const InstructorAccountScreen(),
                 ),
               );
+              // Reload photo after returning from account settings
+              _loadPhoto();
             },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.grey.shade700,
+                backgroundImage: _photoUrl != null
+                    ? NetworkImage(_photoUrl!)
+                    : null,
+                child: _photoUrl == null
+                    ? const Icon(Icons.person,
+                        color: Colors.white, size: 20)
+                    : null,
+              ),
+            ),
           ),
         ],
       ),
@@ -142,6 +179,7 @@ class _HomeBodyState extends State<_HomeBody> {
     return RefreshIndicator(
       onRefresh: _loadClasses,
       child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

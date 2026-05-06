@@ -66,26 +66,28 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
             const SizedBox(height: 12),
             ..._candidates
                 .where((c) => _selectedIds.contains(c['id']))
-                .map((c) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: _beltColor(c['next_belt_color']),
-                              shape: BoxShape.circle,
-                            ),
+                .map(
+                  (c) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _beltColor(c['next_belt_color']),
+                            shape: BoxShape.circle,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${c['first_name']} ${c['last_name']} → ${c['next_belt']}',
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    )),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${c['first_name']} ${c['last_name']} → ${c['next_belt']}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
           ],
         ),
         actions: [
@@ -111,22 +113,26 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
     if (confirm != true) return;
 
     setState(() => _approving = true);
-    final success = await ApiService.approvePromotion(_selectedIds);
+    final result = await ApiService.approvePromotion(_selectedIds);
     setState(() => _approving = false);
 
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success
-            ? '${_selectedIds.length} student(s) promoted successfully!'
-            : 'Failed to approve promotion.'),
-        backgroundColor: success ? const Color(0xFF22C55E) : Colors.red,
+        content: Text(
+          result['success'] == true
+              ? '${_selectedIds.length} student(s) promoted successfully!'
+              : result['message'],
+        ),
+        backgroundColor: result['success'] == true
+            ? const Color(0xFF22C55E)
+            : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
     );
 
-    if (success) {
+    if (result['success'] == true) {
       setState(() => _selectedIds = []);
       _loadCandidates();
     }
@@ -151,7 +157,11 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'Belt Promotion',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.white,
+          ),
         ),
         elevation: 0,
       ),
@@ -169,8 +179,7 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
                             children: [
                               _buildHeader(),
                               const SizedBox(height: 16),
-                              ..._candidates
-                                  .map((c) => _buildCandidateCard(c)),
+                              ..._candidates.map((c) => _buildCandidateCard(c)),
                             ],
                           ),
                         ),
@@ -249,7 +258,8 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
     final isSelected = _selectedIds.contains(c['id'] as int);
     final currentBeltColor = _beltColor(c['belt_color']);
     final nextBeltColor = _beltColor(c['next_belt_color']);
-    final avgScore = ((c['technique_score'] as int) +
+    final avgScore =
+        ((c['technique_score'] as int) +
             (c['discipline_score'] as int) +
             (c['fitness_score'] as int) +
             (c['sparring_score'] as int)) /
@@ -267,9 +277,7 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
               : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF1C1C1E)
-                : Colors.grey.shade200,
+            color: isSelected ? const Color(0xFF1C1C1E) : Colors.grey.shade200,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -302,7 +310,9 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
                       Text(
                         c['student_code'] ?? '',
                         style: const TextStyle(
-                            fontSize: 11, color: Colors.grey),
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -338,22 +348,30 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
                 _beltBadge(c['current_belt'], currentBeltColor),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Icon(Icons.arrow_forward_rounded,
-                      size: 16, color: Colors.grey),
+                  child: Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
                 ),
                 _beltBadge(c['next_belt'], nextBeltColor),
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF22C55E).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.check_circle,
-                          size: 12, color: Color(0xFF22C55E)),
+                      Icon(
+                        Icons.check_circle,
+                        size: 12,
+                        color: Color(0xFF22C55E),
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Ready',
@@ -381,13 +399,15 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
                 _scoreChip('Disc', c['discipline_score'] as int),
                 _scoreChip('Fit', c['fitness_score'] as int),
                 _scoreChip('Spar', c['sparring_score'] as int),
-                _scoreChip('Skills', c['skill_completion'] as int,
-                    isPercent: true),
+                _scoreChip(
+                  'Skills',
+                  c['skill_completion'] as int,
+                  isPercent: true,
+                ),
               ],
             ),
 
-            if (c['notes'] != null &&
-                c['notes'].toString().isNotEmpty) ...[
+            if (c['notes'] != null && c['notes'].toString().isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(10),
@@ -398,14 +418,19 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.notes_rounded,
-                        size: 14, color: Colors.blue),
+                    const Icon(
+                      Icons.notes_rounded,
+                      size: 14,
+                      color: Colors.blue,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         c['notes'],
                         style: const TextStyle(
-                            fontSize: 12, color: Colors.black87),
+                          fontSize: 12,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                   ],
@@ -464,10 +489,7 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 10, color: Colors.grey),
-        ),
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
       ],
     );
   }
@@ -503,15 +525,16 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
-                      color: Colors.white, strokeWidth: 2),
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
                 )
               : const Icon(Icons.military_tech_rounded, size: 20),
           label: Text(
             _approving
                 ? 'Approving...'
                 : 'Approve ${_selectedIds.length} Student(s)',
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, fontSize: 15),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
         ),
       ),
@@ -527,8 +550,11 @@ class _BeltPromotionScreenState extends State<BeltPromotionScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.military_tech_rounded,
-                  size: 64, color: Colors.grey.shade300),
+              Icon(
+                Icons.military_tech_rounded,
+                size: 64,
+                color: Colors.grey.shade300,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'No Promotion Candidates',

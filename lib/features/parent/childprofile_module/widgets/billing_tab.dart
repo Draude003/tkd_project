@@ -117,7 +117,7 @@ class _BillingTabState extends State<BillingTab> {
               ),
               const SizedBox(height: 4),
               Text(
-                '${billing.plan?.description ?? ''} • ${billing.plan?.billingCycle ?? 'Monthly'}',
+                '${billing.plan?.name ?? ''} • ${billing.plan?.billingCycle ?? 'Monthly'}',
                 style: TextStyle(color: Colors.grey[500], fontSize: 13),
               ),
             ],
@@ -634,15 +634,15 @@ class _PayNowModal extends StatelessWidget {
                 _PaymentDetail(
                   icon: Icons.phone_android_rounded,
                   label: 'GCash',
-                  value: '09XX-XXX-XXXX',
-                  name: 'TKD Academy',
+                  value: '0912-345-6789',
+                  name: 'TrainNova',
                 ),
                 const SizedBox(height: 10),
                 _PaymentDetail(
                   icon: Icons.account_balance_rounded,
                   label: 'Bank Transfer',
                   value: 'BDO — 1234-5678-9012',
-                  name: 'TKD Academy Inc.',
+                  name: 'TrainNova',
                 ),
               ],
             ),

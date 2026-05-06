@@ -13,6 +13,8 @@ class Student {
   final String program;
   final String branch;
   final String linkedParent;
+  final String? planName;
+  final String? photoUrl;
 
   const Student({
     required this.name,
@@ -29,6 +31,8 @@ class Student {
     required this.program,
     required this.branch,
     required this.linkedParent,
+    this.planName,
+    this.photoUrl,
   });
 
   String get classAttendanceSummary => '$classesAttended/$totalClasses';
@@ -49,24 +53,9 @@ class Student {
       age: json['age'] ?? 0,
       program: '',
       branch: json['branch']?.toString() ?? '',
-      linkedParent: '',
+      linkedParent: json['linked_parent'] ?? '',
+      planName: json['plan_name'],
+      photoUrl: json['photo_url'],
     );
   }
 }
-
-final sampleStudent = Student(
-  name: 'Juan dela cruz',
-  beltLevel: 'Green Belt',
-  instructor: 'Benedick caber',
-  nextClass: 'Today - 5:00 PM',
-  classesAttended: 7,
-  totalClasses: 9,
-  progressScore: 82,
-  checkInTime: '4:58 PM',
-  loginType: 'face_scan',
-  alerts: ['Belt exam scheduled for September 20'],
-  age: 15,
-  program: 'Junior Sparring',
-  branch: 'TKD Main Dojang',
-  linkedParent: 'Maria Dela Cruz',
-);
