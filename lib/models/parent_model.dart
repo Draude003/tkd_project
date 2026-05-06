@@ -5,6 +5,8 @@ class ChildInfo {
   final String status;
   final String nextClass;
   final String balance;
+  final String? photoUrl;
+  final String? planName;
 
   const ChildInfo({
     required this.id,
@@ -13,6 +15,8 @@ class ChildInfo {
     required this.status,
     required this.nextClass,
     required this.balance,
+    this.photoUrl,
+    this.planName,
   });
 
   factory ChildInfo.fromJson(Map<String, dynamic> json) {
@@ -23,17 +27,23 @@ class ChildInfo {
       status: json['status'] ?? 'active',
       nextClass: json['next_class'] ?? 'No class scheduled',
       balance: json['balance'] ?? '₱0',
+      photoUrl: json['photo_url'],
+      planName: json['plan_name'],
     );
   }
 }
 
 class ParentUser {
   final String name;
+  final String email;
+  final String mobile;
   final List<ChildInfo> children;
   final List<String> alerts;
 
   const ParentUser({
     required this.name,
+    required this.email,
+    required this.mobile,
     required this.children,
     required this.alerts,
   });
@@ -41,6 +51,8 @@ class ParentUser {
   factory ParentUser.fromJson(Map<String, dynamic> json) {
     return ParentUser(
       name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      mobile: json['mobile'] ?? '',
       children: (json['children'] as List<dynamic>? ?? [])
           .map((c) => ChildInfo.fromJson(c))
           .toList(),

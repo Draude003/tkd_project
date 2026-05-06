@@ -1,23 +1,36 @@
 import 'package:flutter/material.dart';
 
 class GuardianInfoCard extends StatelessWidget {
-  const GuardianInfoCard({super.key});
+  final String name;
+  final String email;
+  final String mobile;
+
+  const GuardianInfoCard({
+    super.key,
+    required this.name,
+    required this.email,
+    required this.mobile,
+  });
 
   @override
   Widget build(BuildContext context) {
     return _sectionCard(
-      label: 'Guardian Information',
+      label: 'Profile Information',
       child: Column(
         children: [
-          _infoRow(label: 'Full Name', value: 'Peter Caber', isLast: false),
-          _infoRow(label: 'Mobile Number', value: '+63 917 123 4567', isLast: false),
-          _infoRow(label: 'Email Address', value: 'peter@email.com', isLast: true),
+          _infoRow(label: 'Full Name', value: name.isNotEmpty ? name : '—', isLast: false),
+          _infoRow(label: 'Mobile Number', value: mobile.isNotEmpty ? mobile : '—', isLast: false),
+          _infoRow(label: 'Email Address', value: email.isNotEmpty ? email : '—', isLast: true),
         ],
       ),
     );
   }
 
-  Widget _infoRow({required String label, required String value, required bool isLast}) {
+  Widget _infoRow({
+    required String label,
+    required String value,
+    required bool isLast,
+  }) {
     return Column(
       children: [
         Padding(
@@ -34,15 +47,7 @@ class GuardianInfoCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   value,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {},
-                child: const Text(
-                  'Edit',
-                  style: TextStyle(
-                    color: Colors.blue,
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -65,7 +70,10 @@ Widget _sectionCard({required String label, required Widget child}) {
         children: [
           Container(width: 4, height: 18, color: const Color(0xFF1C1C1E)),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
       const SizedBox(height: 10),

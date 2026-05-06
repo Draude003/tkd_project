@@ -27,7 +27,7 @@ class _FaceRecognitionScreenState extends State<FaceRecognitionScreen> {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('http://192.168.68.105:8000/api/student/profile'),
+        Uri.parse('http://192.168.68.102:8000/api/student/profile'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -92,7 +92,7 @@ class _FaceRecognitionScreenState extends State<FaceRecognitionScreen> {
     try {
       final token = await AuthService.getToken();
       final response = await http.post(
-        Uri.parse('http://192.168.68.105:8000/api/student/reset-face'),
+        Uri.parse('http://192.168.68.102:8000/api/student/reset-face'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -361,7 +361,7 @@ class _BlinkCaptureScreenState extends State<_BlinkCaptureScreen> {
     ),
   );
 
-  static const String baseUrl = 'http://192.168.68.105:8000/api';
+  static const String baseUrl = 'http://192.168.68.102:8000/api';
 
   @override
   void initState() {

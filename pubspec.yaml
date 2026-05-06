@@ -18,6 +18,8 @@ dependencies:
   shared_preferences: ^2.2.0
   google_mlkit_face_detection: ^0.11.0
   image_picker: ^1.0.7
+  pdf: ^3.10.8
+  printing: ^5.12.0
 
 dev_dependencies:
   flutter_test:
@@ -28,9 +30,9 @@ flutter_launcher_icons:
   android: true
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/icons/imagess.png"
+  image_path: "assets/icons/imgg.png"
   adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/icons/imagess.png"
+  adaptive_icon_foreground: "assets/icons/imgg.png"
 
   flutter_lints: ^6.0.0
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tkd/features/instructor/main_screens/quick_start_class_screen.dart';
+import '../competition_module/screens/competition_tracking_screen.dart';
 import '../evaluation_module/screens/student_selection_screen.dart';
 import '../../../models/instructor_model.dart';
 import '../belt_promotion/screens/belt_promotion_screen.dart';
@@ -28,6 +29,26 @@ class InstructorQuickActionsCard extends StatefulWidget {
 class _InstructorQuickActionsCardState
     extends State<InstructorQuickActionsCard> {
   InstructorClass? _activeClass;
+  final ScrollController _scrollController = ScrollController();
+  bool _scrolledRight = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      print('SCROLL OFFSET: ${_scrollController.offset}');
+      final isRight = _scrollController.offset > 10;
+      if (isRight != _scrolledRight) {
+        setState(() => _scrolledRight = isRight);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   String _classStatus(String timeRange) {
     final now = TimeOfDay.now();
@@ -366,6 +387,14 @@ class _InstructorQuickActionsCardState
           MaterialPageRoute(builder: (_) => const BeltPromotionScreen()),
         ),
       ),
+      _QuickAction(
+        icon: Icons.emoji_events_outlined,
+        label: 'Competition',
+        onTap: (ctx) => Navigator.push(
+          ctx,
+          MaterialPageRoute(builder: (_) => const CompetitionTrackingScreen()),
+        ),
+      ),
     ];
 
     return Column(
@@ -379,13 +408,60 @@ class _InstructorQuickActionsCardState
               'Quick Actions',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+            const Spacer(),
+            // 2 dots indicator
+            Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  width: _scrolledRight ? 6 : 10,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: _scrolledRight
+                        ? Colors.grey.shade300
+                        : const Color(0xFF1C1C1E),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  width: _scrolledRight ? 10 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: _scrolledRight
+                        ? const Color(0xFF1C1C1E)
+                        : Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 16),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: actions.map((a) => _ActionTile(action: a)).toList(),
+        NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            final isRight = notification.metrics.pixels > 10;
+            if (isRight != _scrolledRight) {
+              setState(() => _scrolledRight = isRight);
+            }
+            return false;
+          },
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            controller: _scrollController,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: actions
+                  .map(
+                    (a) => Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: _ActionTile(action: a),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         ),
       ],
@@ -401,9 +477,8 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => action.onTap(context),
-      child: Container(
-        width: 80,
-        margin: const EdgeInsets.only(right: 10),
+      child: SizedBox(
+        width: 75,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -421,21 +496,20 @@ class _ActionTile extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(
-                action.icon,
-                size: 28,
-                color: Colors.black),
-              ),
+              child: Icon(action.icon, size: 26, color: Colors.black),
+            ),
             const SizedBox(height: 8),
             Text(
               action.label,
               textAlign: TextAlign.center,
+              maxLines: 2,
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Colors.black),
+                color: Colors.black,
+                height: 1.3,
               ),
-              const SizedBox(height: 15),
+            ),
           ],
         ),
       ),

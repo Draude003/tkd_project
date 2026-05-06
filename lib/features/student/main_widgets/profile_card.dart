@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:tkd/features/student/studprofile_module/screens/student_profile_screen.dart';
 import '../../../models/student_model.dart';
-import '../../../theme/app_theme.dart';
 
 class ProfileCard extends StatelessWidget {
   final Student student;
 
   const ProfileCard({super.key, required this.student});
 
+  static const String _storageBase = 'http://192.168.68.102:8000/storage/';
+
+  String _photoUrl(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    if (raw.startsWith('http')) return raw;
+    if (raw.startsWith('/storage/')) return 'http://192.168.68.102:8000$raw';
+    return '$_storageBase$raw';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final photoUrl = _photoUrl(student.photoUrl);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -20,115 +30,276 @@ class ProfileCard extends StatelessWidget {
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 26, 26, 26),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            _Avatar(),
-            const SizedBox(width: 14),
-            _StudentInfo(student: student),
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
           ],
         ),
-      ),
-    );
-  }
-}
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Top row — avatar + name + belt + status ──
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundImage: photoUrl.isNotEmpty
+                        ? NetworkImage(photoUrl)
+                        : null,
+                    child: photoUrl.isEmpty
+                        ? Text(
+                            student.name.isNotEmpty
+                                ? student.name[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          student.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${student.beltLevel} Belt',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF22C55E).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF22C55E),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        const Text(
+                          'ACTIVE',
+                          style: TextStyle(
+                            color: Color(0xFF22C55E),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
 
-class _Avatar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Center(
-        child: Image.asset(
-          'assets/icons/profile.png',
-          width: 30,
-          height: 30,
-        ),
-      ),
-    );
-  }
-}
+              const SizedBox(height: 16),
+              Container(height: 1, color: Colors.white.withOpacity(0.08)),
+              const SizedBox(height: 14),
 
-class _StudentInfo extends StatelessWidget {
-  final Student student;
+              // ── Info row ──
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Class Schedule
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'CLASS SCHEDULE',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.access_time_rounded,
+                                  size: 12, color: Colors.grey.shade400),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  student.nextClass,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.4,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
 
-  const _StudentInfo({required this.student});
+                    // Plan
+                    if (student.planName != null) ...[
+                      Container(
+                        width: 1,
+                        color: Colors.white.withOpacity(0.08),
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'PLAN',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            student.planName!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          student.name,
-          style: const TextStyle(
-            color: AppTheme.textOnDark,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
+                    // Instructor
+                    Container(
+                      width: 1,
+                      color: Colors.white.withOpacity(0.08),
+                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'INSTRUCTOR',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          student.instructor,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 14),
+              Container(height: 1, color: Colors.white.withOpacity(0.08)),
+              const SizedBox(height: 12),
+
+              // ── View Profile button ──
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.15),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'View Profile',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 10,
+                          color: Colors.white70,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 6),
-        _BeltBadge(label: student.beltLevel),
-        const SizedBox(height: 8),
-        _InfoRow(label: 'Instructor:', value: student.instructor),
-        _InfoRow(label: 'Next Class:', value: student.nextClass),
-      ],
-    );
-  }
-}
-
-class _BeltBadge extends StatelessWidget {
-  final String label;
-
-  const _BeltBadge({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppTheme.primaryGreen,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AppTheme.textOnDark,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        style: const TextStyle(fontSize: 13, color: AppTheme.textOnDark),
-        children: [
-          TextSpan(
-            text: '$label ',
-            style: const TextStyle(color: AppTheme.textOnDarkMuted),
-          ),
-          TextSpan(text: value),
-        ],
       ),
     );
   }

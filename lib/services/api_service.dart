@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'auth_services.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.68.105:8000/api';
+  static const String baseUrl = 'http://192.168.68.102:8000/api';
 
   static Future<Map<String, String>> get _headers async {
     final token = await AuthService.getToken();
@@ -413,7 +413,7 @@ static Future<List<dynamic>> getBeltPromotionCandidates() async {
   }
 }
 
-static Future<bool> approvePromotion(List<int> studentIds) async {
+static Future<Map<String, dynamic>> approvePromotion(List<int> studentIds) async {
   try {
     final response = await http.post(
       Uri.parse('$baseUrl/instructor/belt-promotion/approve'),
@@ -421,9 +421,193 @@ static Future<bool> approvePromotion(List<int> studentIds) async {
       body: jsonEncode({'student_ids': studentIds}),
     );
     final data = jsonDecode(response.body);
+    return {
+      'success': data['success'] == true,
+      'message': data['message'] ?? '',
+    };
+  } catch (e) {
+    return {'success': false, 'message': 'Something went wrong.'};
+  }
+}
+
+// ─── COMPETITION ───────────────────────────────────────────
+
+static Future<List<dynamic>> getInstructorCompetitions() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/competitions'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['competitions'];
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
+
+static Future<Map<String, dynamic>?> getCompetitionEntries(int competitionId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/competitions/$competitionId/entries'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<bool> addCompetitionNote(int entryId, String remarks) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/instructor/competition-entries/$entryId/add-note'),
+      headers: await _headers,
+      body: jsonEncode({'remarks': remarks}),
+    );
+    final data = jsonDecode(response.body);
     return data['success'] == true;
   } catch (e) {
     return false;
   }
 }
+
+static Future<Map<String, dynamic>?> getStudentCompetitions() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/student/competitions'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<Map<String, dynamic>?> getChildCompetitions(int childId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/parent/child/$childId/competitions'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<Map<String, dynamic>?> getChildAttendance(int childId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/parent/child/$childId/attendance'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<Map<String, dynamic>?> getStudentProgressView(int studentId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/student/$studentId/progress'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<Map<String, dynamic>?> getInstructorReports() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/reports'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<Map<String, dynamic>?> getInstructorProfile() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/instructor/profile'),
+      headers: await _headers,
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) return data['data'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<bool> updateInstructorProfile(Map<String, dynamic> payload) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/instructor/profile/update'),
+      headers: await _headers,
+      body: jsonEncode(payload),
+    );
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  } catch (e) {
+    return false;
+  }
+}
+
+static Future<String?> updateInstructorPhoto(String imagePath) async {
+  try {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/instructor/profile/update-photo'),
+    );
+    final headers = await _headers;
+    request.headers.addAll(headers);
+    request.files.add(await http.MultipartFile.fromPath('photo', imagePath));
+    final response = await request.send();
+    final body = await response.stream.bytesToString();
+    final data = jsonDecode(body);
+    if (data['success'] == true) return data['photo_url'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+static Future<String?> updateStudentPhoto(String imagePath) async {
+  try {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/student/profile/update-photo'),
+    );
+    final headers = await _headers;
+    request.headers.addAll(headers);
+    request.files.add(await http.MultipartFile.fromPath('photo', imagePath));
+    final response = await request.send();
+    final body = await response.stream.bytesToString();
+    final data = jsonDecode(body);
+    if (data['success'] == true) return data['photo_url'];
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
 }

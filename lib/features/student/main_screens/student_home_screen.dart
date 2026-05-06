@@ -22,14 +22,26 @@ class StudentHomeScreen extends StatefulWidget {
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
   int _currentIndex = 0;
   int _unreadCount = 0;
+  final GlobalKey<_HomeBodyState> _homeKey = GlobalKey<_HomeBodyState>();
+  List<Widget> _screens = [];
 
-   @override
+  @override
   void initState() {
     super.initState();
+    _screens = [
+      _HomeBody(key: _homeKey),
+      const ProgressScreen(),
+      const ChatScreen(),
+      const StudentAnnouncementScreen(),
+      const AccountScreen(),
+    ];
     _loadUnreadCount();
   }
 
   void _onNavTap(int index) {
+    if (index == 0 && _currentIndex != 0) {
+      _homeKey.currentState?.reload();
+    }
     setState(() => _currentIndex = index);
     if (index == 3) {
       ApiService.markAnnouncementsRead().then((_) {
@@ -38,24 +50,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
   }
 
-    Future<void> _loadUnreadCount() async {
+  Future<void> _loadUnreadCount() async {
     final count = await ApiService.getUnreadAnnouncementCount();
     if (mounted) setState(() => _unreadCount = count);
   }
 
-  //for routing
-  static const List<Widget> _screens = [
-    _HomeBody(),
-    ProgressScreen(),
-    ChatScreen(),
-    StudentAnnouncementScreen(),
-    AccountScreen(),
-  ];
-  
-  //for appbar title
   static const List<String> _titles = [
     'Home',
-    'progress',
+    'Progress',
     'Messages',
     'Announcements',
     'Account',
@@ -80,7 +82,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ),
         ],
       ),
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: _screens.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
@@ -90,9 +94,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   }
 }
 
-// Home tab content (extracted as separate widget)
+// ── Home Tab ──
 class _HomeBody extends StatefulWidget {
-  const _HomeBody();
+  const _HomeBody({super.key});
 
   @override
   State<_HomeBody> createState() => _HomeBodyState();
@@ -108,17 +112,14 @@ class _HomeBodyState extends State<_HomeBody> {
     _loadProfile();
   }
 
+  void reload() => _loadProfile();
 
   Future<void> _loadProfile() async {
+    if (mounted) setState(() => _isLoading = true);
     final data = await ApiService.getStudentProfile();
-    if (data != null) {
+    if (mounted) {
       setState(() {
-        _student = Student.fromJson(data);
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _student = sampleStudent;
+        _student = data != null ? Student.fromJson(data) : null;
         _isLoading = false;
       });
     }
@@ -130,32 +131,43 @@ class _HomeBodyState extends State<_HomeBody> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    if (_student == null) {
+      return const Center(child: Text('Failed to load profile.'));
+    }
+
     final student = _student!;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            'Welcome! ${student.name.split(' ').first}',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+    return RefreshIndicator(
+      onRefresh: _loadProfile,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            Text(
+              'Welcome! ${student.name.split(' ').first}',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-          ),
-          const SizedBox(height: 16),
-          ProfileCard(student: student),
-          const SizedBox(height: 16),
-          StatusTodayCard(checkInTime: student.checkInTime, loginType: student.loginType),
-          const SizedBox(height: 16),
-          const StudentQuickActionsCard(),
-          const SizedBox(height: 16),
-          ThisMonthCard(student: student),
-          const SizedBox(height: 16),
-          RecentAlertsCard(alerts: student.alerts),
-          const SizedBox(height: 16),
-        ],
+            const SizedBox(height: 16),
+            ProfileCard(student: student),
+            const SizedBox(height: 16),
+            StatusTodayCard(
+              checkInTime: student.checkInTime,
+              loginType: student.loginType,
+            ),
+            const SizedBox(height: 16),
+            const StudentQuickActionsCard(),
+            const SizedBox(height: 16),
+            ThisMonthCard(student: student),
+            const SizedBox(height: 16),
+            RecentAlertsCard(alerts: student.alerts),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
